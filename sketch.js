@@ -491,3 +491,94 @@ function calculateScaleRatio(){
     if (windowWidth <= 1200) availableWidth = windowWidth - 100;
     let availableHeight = windowHeight - 150;
     availW = Math.max(320, availableWidth);
+    availH = Math.max(320, availableHeight);
+  }
+  const pw = posterSizes[posterSize].width;
+  const ph = posterSizes[posterSize].height;
+  const widthRatio  = availW / pw;
+  const heightRatio = availH / ph;
+  scaleRatio = EMBED_MODE ? Math.min(widthRatio, heightRatio)
+                          : Math.min(widthRatio, heightRatio, 0.5);
+  scaleRatio = Math.max(scaleRatio, 0.2);
+}
+function updateCanvasSize(){
+  canvasW = posterSizes[posterSize].width  * scaleRatio;
+  canvasH = posterSizes[posterSize].height * scaleRatio;
+  if (typeof resizeCanvas==='function') resizeCanvas(canvasW, canvasH);
+  adjustContainerForPosterSize();
+}
+function windowResized(){ calculateScaleRatio(); updateCanvasSize(); }
+function adjustContainerForPosterSize(){
+  const editor = select('#editorContainer'); if (!editor) return;
+  if (posterSize==='Landscape') editor.addClass('landscape-mode'); else editor.removeClass('landscape-mode');
+}
+function applyRGFFontToHeaders(){
+  if (!fontsLoaded) return;
+  const heads = selectAll('h1, h2, h3, h4, h5, h6'); for (const h of heads) h.addClass('rgf-font');
+  const labels= selectAll('.label'); for (const l of labels) l.addClass('rgf-font');
+}
+function updateSelectedColorIndicator(){
+  for (const col in colorButtons){ colorButtons[col].removeClass('selected'); }
+  if (colorButtons[bgColor]) colorButtons[bgColor].addClass('selected');
+}
+function updateLineLimitDisplay(){
+  const lineLabel = select('#lineLimit'); if (lineLabel) lineLabel.html(`Main Text (${getMaxLines()} lines max):`);
+}
+function initializeSliderPositions(){
+  setTimeout(()=>{
+    const sizePercent=(1-0.5)/1.5; const sImg=select('#sizeSliderContainer img'); if (sImg) sImg.style('left',(sizePercent*100)+'%');
+    const xPercent=(illustrationX/scaleRatio+2160)/4320; const xImg=select('#illuSliderContainer img'); if (xImg) xImg.style('left',(xPercent*100)+'%');
+    const yPercent=(illustrationY/scaleRatio+1080)/2160; const yImg=select('#illuYSliderContainer img'); if (yImg) yImg.style('left',(yPercent*100)+'%');
+  },100);
+}
+function setupEventListeners(){
+  const sizeSelector=select('#posterSizeSelector');
+  if (sizeSelector){
+    sizeSelector.changed(()=>{
+      posterSize=sizeSelector.value();
+      calculateScaleRatio(); updateCanvasSize(); updateLineLimitDisplay(); updateWrappedText(); validateTextLength();
+    });
+  }
+  window.addEventListener('resize', windowResized);
+}
+function addStyles(){
+  const style=document.createElement('style');
+  style.textContent = `
+@font-face { font-family:'RGF Sans'; src:url('assets/Fonts/200525_RGF_Sans.otf') format('opentype'); }
+body { margin:0; padding:0; background-color:#f5f5f5; }
+.rgf-font{ font-family:'RGF Sans', sans-serif !important; }
+.color-button-container{ position:relative; display:inline-block; margin:5px; }
+.color-button{ width:40px; height:40px; border:none; border-radius:6px; cursor:pointer; }
+.selected-indicator{ position:absolute; top:-10px; left:-10px; width:60px; height:60px; pointer-events:none; display:none; transform:scale(0.6); }
+.selected .selected-indicator{ display:block; }
+.ui-section{ margin-bottom:15px; }
+.poster-thumbnail{ width:100%; cursor:pointer; }
+.poster-thumbnail img{ width:100%; height:auto; display:block; }
+.poster-thumbnail.landscape{ grid-column:1 / -1; }
+#posterGrid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); grid-gap:20px; grid-auto-rows:auto; width:100%; padding:20px; }
+#uiPanel{ width:350px; min-width:350px; position:sticky; top:20px; align-self:flex-start; }
+#canvasContainer{ display:flex; justify-content:center; align-items:center; min-width:0; }
+canvas{ max-width:100%; height:auto !important; object-fit:contain; }
+#editorContainer.landscape-mode{ max-width:1600px; }
+select option:disabled{ color:#999; font-style:italic; }
+@media (max-width:1200px){
+  #editorContainer{ flex-direction:column; align-items:center; }
+  #uiPanel{ width:100%; max-width:600px; margin-bottom:15px; position:static; }
+}
+@media (max-width:768px){
+  #posterGrid{ grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); }
+}
+
+/* ---- EMBED MODE: make app fill iframe height, no inner scroll ---- */
+html, body { height: 100%; }
+#app, #mainContainer, #editorContainer, #canvasContainer { height: 100%; }
+${EMBED_MODE ? 'body{overflow:hidden;}' : ''}
+#uiPanel { overflow:auto; }
+`;
+  document.head.appendChild(style);
+}
+function enforceLayoutRestrictions(){
+  if (layout===3) layout=1;
+  if (layout===2 && !(posterSize==='Story' || posterSize==='Post')) layout=1;
+  const layoutSelector=select('#layoutSelector'); if (layoutSelector) layoutSelector.value(layout);
+}
