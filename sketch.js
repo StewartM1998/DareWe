@@ -1,9 +1,9 @@
 // -------------------------------------------------------------
-// DARE WE GENERATOR — Full version (GitHub Pages)
+// DARE WE GENERATOR — Full version (GitHub Pages + Wix auto-resize)
 // Folders (case-sensitive):
-//   assets/UI/              -> handles, logos, selected01.png, vector2.png
+//   assets/UI/              -> handle.png, logo-left0..5.png, logo-right.png, logo-right2.png, selected01.png, vector2.png
 //   assets/Fonts/           -> 200525_RGF_Sans.otf, HelveticaNeueLTPro-Roman.ttf (optional)
-//   assets/Illustrations/   -> <Category>/<Category>0..5.png
+//   assets/Illustrations/   -> <Category>/<Category>0..5.png (Cake, Eye, FlowerA/B/C, HandA/B/C, Lip, Question)
 // -------------------------------------------------------------
 
 // ---------- Global state ----------
@@ -38,94 +38,57 @@ const categories = ["Cake", "Eye", "FlowerA", "FlowerB", "FlowerC", "HandA", "Ha
 
 // ---------- Character limits ----------
 const charsPerLineConfig = {
-  'Story': 10,
-  'Post': 10,
-  'Square': 10,
-  'Landscape': 16
+  'Story': 10, 'Post': 10, 'Square': 10, 'Landscape': 16
 };
-function getCharsPerLine() {
-  return charsPerLineConfig[posterSize] || 10;
-}
+function getCharsPerLine() { return charsPerLineConfig[posterSize] || 10; }
 
 // ---------- Positions ----------
 const headerPositions = {
-  1: {
-    'Story':     { leftX: 40, rightX: 80,  y: 150 },
-    'Post':      { leftX: 40, rightX: 40,  y: 40  },
-    'Square':    { leftX: 40, rightX: 40,  y: 40  },
-    'Landscape': { leftX: 40, rightX: 40,  y: 40  }
-  },
-  2: {
-    'Story':     { leftX: 40, rightX: 40,  y: 150 },
-    'Post':      { leftX: 40, rightX: 40,  y: 40  },
-    'Square':    { leftX: 40, rightX: 40,  y: 40  },
-    'Landscape': { leftX: 40, rightX: 40,  y: 40  }
-  }
+  1: {'Story':{leftX:40,rightX:80,y:150},'Post':{leftX:40,rightX:40,y:40},'Square':{leftX:40,rightX:40,y:40},'Landscape':{leftX:40,rightX:40,y:40}},
+  2: {'Story':{leftX:40,rightX:40,y:150},'Post':{leftX:40,rightX:40,y:40},'Square':{leftX:40,rightX:40,y:40},'Landscape':{leftX:40,rightX:40,y:40}}
 };
-
 const footerPositions = {
-  1: {
-    'Story':     { leftX: 40, centerY: 40, rightX: 40,  y: 40 },
-    'Post':      { leftX: 40, centerY: 35, rightX: 40,  y: 40 },
-    'Square':    { leftX: 40, centerY: 35, rightX: 40,  y: 40 },
-    'Landscape': { leftX: 40, centerY: 35, rightX: 40,  y: 40 }
-  },
-  2: {
-    'Story':     { leftX: 40, centerY: 40, rightX: 140, y: 40 },
-    'Post':      { leftX: 40, centerY: 40, rightX: 40,  y: 40 },
-    'Square':    { leftX: 40, centerY: 35, rightX: 40,  y: 40 },
-    'Landscape': { leftX: 40, centerY: 35, rightX: 40,  y: 40 }
-  }
+  1: {'Story':{leftX:40,centerY:40,rightX:40,y:40},'Post':{leftX:40,centerY:35,rightX:40,y:40},'Square':{leftX:40,centerY:35,rightX:40,y:40},'Landscape':{leftX:40,centerY:35,rightX:40,y:40}},
+  2: {'Story':{leftX:40,centerY:40,rightX:140,y:40},'Post':{leftX:40,centerY:40,rightX:40,y:40},'Square':{leftX:40,centerY:35,rightX:40,y:40},'Landscape':{leftX:40,centerY:35,rightX:40,y:40}}
 };
-
 const textPositions = {
-  1: {
-    'Story':     { hashtagX: 40,  hashtagY: 360, mainTextX: 417, mainTextY: 480, leading: 115 },
-    'Post':      { hashtagX: 40,  hashtagY: 280, mainTextX: 417, mainTextY: 400, leading: 115 },
-    'Square':    { hashtagX: 40,  hashtagY: 240, mainTextX: 417, mainTextY: 360, leading: 115 },
-    'Landscape': { hashtagX: 40,  hashtagY: 340, mainTextX: 420, mainTextY: 450, leading: 115 }
-  },
-  2: {
-    'Story':     { titleX: 1040, titleY: 365, hashtagX: 40,  hashtagY: 1040, mainTextX: 386, mainTextY: 1165, leading: 115 },
-    'Post':      { titleX: 1040, titleY: 270, hashtagX: 40,  hashtagY: 688,  mainTextX: 420, mainTextY: 800,  leading: 115 },
-    'Square':    { titleX: 1040, titleY: 240, hashtagX: 40,  hashtagY: 500,  mainTextX: 330, mainTextY: 620,  leading: 115 },
-    'Landscape': { titleX: 1880, titleY: 240, hashtagX: 40,  hashtagY: 600,  mainTextX: 330, mainTextY: 720,  leading: 115 }
-  }
+  1:{'Story':{hashtagX:40,hashtagY:360,mainTextX:417,mainTextY:480,leading:115},
+     'Post':{hashtagX:40,hashtagY:280,mainTextX:417,mainTextY:400,leading:115},
+     'Square':{hashtagX:40,hashtagY:240,mainTextX:417,mainTextY:360,leading:115},
+     'Landscape':{hashtagX:40,hashtagY:340,mainTextX:420,mainTextY:450,leading:115}},
+  2:{'Story':{titleX:1040,titleY:365,hashtagX:40,hashtagY:1040,mainTextX:386,mainTextY:1165,leading:115},
+     'Post':{titleX:1040,titleY:270,hashtagX:40,hashtagY:688,mainTextX:420,mainTextY:800,leading:115},
+     'Square':{titleX:1040,titleY:240,hashtagX:40,hashtagY:500,mainTextX:330,mainTextY:620,leading:115},
+     'Landscape':{titleX:1880,titleY:240,hashtagX:40,hashtagY:600,mainTextX:330,mainTextY:720,leading:115}}
 };
-
 const illustrationPositions = {
-  1: { 'Story': { bottomOffset: 350 }, 'Post': { bottomOffset: 200 }, 'Square': { bottomOffset: 150 }, 'Landscape': { bottomOffset: 200 } },
-  2: { 'Story': { bottomOffset: 750 }, 'Post': { bottomOffset: 400 }, 'Square': { bottomOffset: 300 }, 'Landscape': { bottomOffset: 400 } }
+  1:{'Story':{bottomOffset:350},'Post':{bottomOffset:200},'Square':{bottomOffset:150},'Landscape':{bottomOffset:200}},
+  2:{'Story':{bottomOffset:750},'Post':{bottomOffset:400},'Square':{bottomOffset:300},'Landscape':{bottomOffset:400}}
 };
-
 const lineLimits = {
-  1: { 'Story': 10, 'Post': 6, 'Square': 4, 'Landscape': 4 },
-  2: { 'Story': 5,  'Post': 4, 'Square': 4, 'Landscape': 4 }
+  1:{'Story':10,'Post':6,'Square':4,'Landscape':4},
+  2:{'Story':5,'Post':4,'Square':4,'Landscape':4}
 };
-function getMaxLines() { return lineLimits[layout][posterSize] || 4; }
+function getMaxLines(){ return lineLimits[layout][posterSize] || 4; }
 
 // ---------- Poster dimensions ----------
 const posterSizes = {
-  'Story':     { width: 1080, height: 1920 },
-  'Post':      { width: 1080, height: 1350 },
-  'Square':    { width: 1080, height: 1080 },
-  'Landscape': { width: 1920, height: 1080 }
+  'Story':{width:1080,height:1920}, 'Post':{width:1080,height:1350},
+  'Square':{width:1080,height:1080}, 'Landscape':{width:1920,height:1080}
 };
 
 // ---------- Colors ----------
 let colors = {
-  '#400d60': { logoIdx: 3, illuIdx: 4 },
-  '#db48ff': { logoIdx: 0, illuIdx: 3 },
-  '#f8add2': { logoIdx: 0, illuIdx: 5 },
-  '#a4e5d8': { logoIdx: 1, illuIdx: 1 },
-  '#2737a2': { logoIdx: 1, illuIdx: 3 }
+  '#400d60':{logoIdx:3,illuIdx:4}, '#db48ff':{logoIdx:0,illuIdx:3},
+  '#f8add2':{logoIdx:0,illuIdx:5}, '#a4e5d8':{logoIdx:1,illuIdx:1},
+  '#2737a2':{logoIdx:1,illuIdx:3}
 };
 let colorPalette = {
-  '#400d60': { logo:'#f8add2', block1:'#db48ff', block2:'#f8add2', block3:'#db48ff', readMore:'#a4e5d8', illu:'#a4e5d8', footer:'#f8add2' },
-  '#db48ff': { logo:'#2737a2', block1:'#2737a2', block2:'#a4e5d8', block3:'#2737a2', readMore:'#b11bab', illu:'#f8add2', footer:'#a4e5d8' },
-  '#f8add2': { logo:'#2737a2', block1:'#43273a', block2:'#db48ff', block3:'#43273a', readMore:'#db48ff', illu:'#400d60', footer:'#2737a2' },
-  '#a4e5d8': { logo:'#db48ff', block1:'#2737a2', block2:'#db48ff', block3:'#2737a2', readMore:'#db48ff', illu:'#db48ff', footer:'#db48ff' },
-  '#2737a2': { logo:'#db48ff', block1:'#db48ff', block2:'#a4e5d8', block3:'#db48ff', readMore:'#a4e5d8', illu:'#f8add2', footer:'#db48ff' }
+  '#400d60':{logo:'#f8add2',block1:'#db48ff',block2:'#f8add2',block3:'#db48ff',readMore:'#a4e5d8',illu:'#a4e5d8',footer:'#f8add2'},
+  '#db48ff':{logo:'#2737a2',block1:'#2737a2',block2:'#a4e5d8',block3:'#2737a2',readMore:'#b11bab',illu:'#f8add2',footer:'#a4e5d8'},
+  '#f8add2':{logo:'#2737a2',block1:'#43273a',block2:'#db48ff',block3:'#43273a',readMore:'#db48ff',illu:'#400d60',footer:'#2737a2'},
+  '#a4e5d8':{logo:'#db48ff',block1:'#2737a2',block2:'#db48ff',block3:'#2737a2',readMore:'#db48ff',illu:'#db48ff',footer:'#db48ff'},
+  '#2737a2':{logo:'#db48ff',block1:'#db48ff',block2:'#a4e5d8',block3:'#db48ff',readMore:'#a4e5d8',illu:'#f8add2',footer:'#db48ff'}
 };
 
 // ---------- Wrapped text ----------
@@ -136,23 +99,18 @@ let wrappedMainText = [];
 function preload() {
   selectedIndicator = loadImage(F_UI + 'selected01.png');
 
-  for (let i = 0; i < 6; i++) {
-    logos[i] = loadImage(F_UI + `logo-left${i}.png`);
-  }
+  for (let i=0;i<6;i++) logos[i] = loadImage(F_UI + `logo-left${i}.png`);
   logosRight  = loadImage(F_UI + 'logo-right.png');
   logosRight2 = loadImage(F_UI + 'logo-right2.png');
 
-  for (let cat of categories) {
+  for (let cat of categories){
     illustrationImgs[cat] = [];
-    for (let i = 0; i < 6; i++) {
+    for (let i=0;i<6;i++){
       illustrationImgs[cat][i] = loadImage(F_ILLU + `${cat}/${cat}${i}.png`);
     }
   }
 
-  rgfFont = loadFont(F_FONTS + '200525_RGF_Sans.otf', () => {
-    fontsLoaded = true;
-    console.log('RGF Sans font loaded');
-  });
+  rgfFont = loadFont(F_FONTS + '200525_RGF_Sans.otf', ()=>{ fontsLoaded=true; console.log('RGF Sans font loaded'); });
   // Optional; comment out if you don’t ship it:
   helveticaFont = loadFont(F_FONTS + 'HelveticaNeueLTPro-Roman.ttf');
 }
@@ -164,10 +122,10 @@ let canvasW, canvasH;
 function setup() {
   const main = createDiv().id('mainContainer');
   main.parent('app');
-  main.style('width', '100%');
-  main.style('display', 'flex');
-  main.style('flex-direction', 'column');
-  main.style('align-items', 'center');
+  main.style('width','100%');
+  main.style('display','flex');
+  main.style('flex-direction','column');
+  main.style('align-items','center');
 
   wallContainer = createDiv().id('wallContainer');
   wallContainer.parent(main);
@@ -211,7 +169,7 @@ function setup() {
   ui.style('top','15px');
   ui.style('align-self','flex-start');
 
-  const title = createElement('h1', 'Dare We generator');
+  const title = createElement('h1','Dare We generator');
   title.parent(ui);
   title.style('margin-top','0');
   title.style('margin-bottom','20px');
@@ -251,6 +209,9 @@ function setup() {
   initializeSliderPositions();
   enforceLayoutRestrictions();
   updateLayoutOptions();
+
+  // Initial height report for Wix
+  _dwPostHeightDebounced(30);
 }
 
 function draw() {
@@ -377,9 +338,12 @@ function displayPosterInWall(posterData, addToTop=false) {
     const ix = savedPosters.findIndex(p=>p.dataUrl===posterData.dataUrl);
     if (ix!==-1){ savedPosters.splice(ix,1); localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters)); }
     box.remove();
+    _dwPostHeightDebounced(30);
   });
   if (addToTop && posterGrid.elt.firstChild) posterGrid.elt.insertBefore(box.elt, posterGrid.elt.firstChild);
   else box.parent(posterGrid);
+
+  _dwPostHeightDebounced(30); // report new height to Wix
 }
 
 // ---------- UI ----------
@@ -418,6 +382,7 @@ function createUI(ui) {
     updateLayoutOptions();
     calculateScaleRatio(); updateCanvasSize();
     updateLineLimitDisplay(); updateWrappedText(); validateTextLength();
+    _dwPostHeightDebounced(30);
   });
 
   createLabel('Style:', posterSection);
@@ -434,6 +399,7 @@ function createUI(ui) {
       layout = int(layoutSelector.value());
     }
     updateWrappedText(); updateLineLimitDisplay(); validateTextLength();
+    _dwPostHeightDebounced(30);
   });
 
   const colorSection = createSection();
@@ -458,7 +424,7 @@ function createUI(ui) {
   illuSelector.parent(illuSection);
   illuSelector.style('width','100%'); illuSelector.style('padding','10px');
   illuSelector.style('margin-bottom','15px'); illuSelector.style('font-size','16px');
-  illuSelector.changed(()=> illustrationCategory = illuSelector.value());
+  illuSelector.changed(()=> { illustrationCategory = illuSelector.value(); _dwPostHeightDebounced(30); });
 
   // Scale slider
   createLabel('Scale:', illuSection);
@@ -544,7 +510,7 @@ function createUI(ui) {
     if (['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key) || e.ctrlKey || e.metaKey) return true;
     if (wouldExceedLineLimit(mainTextArea.value(), e.key)) { e.preventDefault(); return false; }
   });
-  mainTextArea.input(()=>{ validateTextLength(mainTextArea.value()); });
+  mainTextArea.input(()=>{ validateTextLength(mainTextArea.value()); _dwPostHeightDebounced(30); });
 
   // Export
   const exportSection = createSection();
@@ -566,6 +532,7 @@ function createUI(ui) {
     localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters));
     displayPosterInWall(posterData, true);
     document.getElementById('wallContainer').scrollIntoView({behavior:'smooth', block:'start'});
+    _dwPostHeightDebounced(30);
   });
 
   const clearBtn = createButton('Clear All Saved Posters');
@@ -581,6 +548,7 @@ function createUI(ui) {
     localStorage.removeItem('rgfSavedPosters');
     const grid = select('#posterGrid');
     if (grid) { while (grid.elt.firstChild) grid.elt.removeChild(grid.elt.firstChild); }
+    _dwPostHeightDebounced(30);
   });
 }
 
@@ -627,8 +595,9 @@ function updateCanvasSize() {
   canvasH = posterSizes[posterSize].height * scaleRatio;
   if (typeof resizeCanvas === 'function') resizeCanvas(canvasW, canvasH);
   adjustContainerForPosterSize();
+  _dwPostHeightDebounced(30);
 }
-function windowResized() { calculateScaleRatio(); updateCanvasSize(); }
+function windowResized() { calculateScaleRatio(); updateCanvasSize(); _dwPostHeightDebounced(30); }
 function adjustContainerForPosterSize() {
   const editor = select('#editorContainer'); if (!editor) return;
   if (posterSize==='Landscape') editor.addClass('landscape-mode'); else editor.removeClass('landscape-mode');
@@ -663,6 +632,7 @@ function setupEventListeners() {
       posterSize = sizeSelector.value();
       calculateScaleRatio(); updateCanvasSize();
       updateLineLimitDisplay(); updateWrappedText(); validateTextLength();
+      _dwPostHeightDebounced(30);
     });
   }
   window.addEventListener('resize', windowResized);
@@ -705,3 +675,27 @@ function enforceLayoutRestrictions() {
   if (layout===2 && !(posterSize==='Story'||posterSize==='Post')) layout=1;
   const layoutSelector = select('#layoutSelector'); if (layoutSelector) layoutSelector.value(layout);
 }
+
+// ---------- EMBED RESIZE COMMUNICATION (auto iframe height) ----------
+let __dw_resizeTO, __dw_heartbeatCount = 0;
+
+function _dwPostHeight(pad = 0) {
+  if (window.parent === window) return; // not in an iframe
+  const h = Math.max(
+    document.documentElement.scrollHeight,
+    document.body.scrollHeight
+  );
+  window.parent.postMessage({ type: 'DW_HEIGHT', height: h + pad }, '*');
+}
+function _dwPostHeightDebounced(pad = 0) {
+  clearTimeout(__dw_resizeTO);
+  __dw_resizeTO = setTimeout(() => _dwPostHeight(pad), 60);
+}
+window.addEventListener('load', () => {
+  const t = setInterval(() => {
+    _dwPostHeight(30);
+    if (++__dw_heartbeatCount > 10) clearInterval(t);
+  }, 250);
+});
+const __dwObserver = new MutationObserver(() => _dwPostHeightDebounced(30));
+__dwObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
