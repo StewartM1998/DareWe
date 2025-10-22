@@ -7,7 +7,7 @@
 // -------------------------------------------------------------
 
 // ---------- Global state ----------
-let bgColor = '#400d60';
+let bgColor = '112,32,130';
 let layout = 1;
 let posterSize = 'Story'; // 'Story' | 'Post' | 'Square' | 'Landscape'
 let hashtagText = '# dare we';
