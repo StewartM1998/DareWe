@@ -1,10 +1,12 @@
-// -----------------------------
-// DARE WE — Final GitHub Pages version
-// -----------------------------
+// -------------------------------------------------------------
+// DARE WE GENERATOR (GitHub Pages version)
+// Structure: assets/UI/, assets/Fonts/, assets/Illustrations/
+// -------------------------------------------------------------
 
+// Globals
 let bgColor = '#400d60';
 let layout = 1;
-let posterSize = 'Story'; // 'Story', 'Post', 'Square', or 'Landscape'
+let posterSize = 'Story';
 let hashtagText = '# dare we';
 let mainText = '';
 let illustrationX = 4;
@@ -13,7 +15,6 @@ let illustrationScale = 1;
 let illustrationCategory = 'Cake';
 let illustrationIndex = 0;
 
-// Assets and UI elements
 let logos = [];
 let logosRight, logosRight2;
 let illustrationImgs = {};
@@ -26,7 +27,7 @@ let mainTextArea;
 let fontsLoaded = false;
 let colorButtons = {};
 
-// Folder constants (for your current file structure)
+// Corrected folder constants
 const F_UI = 'assets/UI/';
 const F_FONTS = 'assets/Fonts/';
 const F_ILLU = 'assets/Illustrations/';
@@ -37,15 +38,7 @@ const categories = [
   "HandA", "HandB", "HandC", "Lip", "Question"
 ];
 
-// Character limits per poster size
-const charsPerLineConfig = {
-  'Story': 10,
-  'Post': 10,
-  'Square': 10,
-  'Landscape': 16
-};
-
-// Layout and size constants
+// Poster sizes
 const posterSizes = {
   'Story': { width: 1080, height: 1920 },
   'Post': { width: 1080, height: 1350 },
@@ -53,15 +46,19 @@ const posterSizes = {
   'Landscape': { width: 1920, height: 1080 }
 };
 
-// Positioning and color configuration objects (unchanged from your version)
-// — keep your headerPositions, footerPositions, textPositions, illustrationPositions,
-//   lineLimits, colorPalette, etc. exactly as you had them before.
+// Character limits
+const charsPerLineConfig = {
+  'Story': 10,
+  'Post': 10,
+  'Square': 10,
+  'Landscape': 16
+};
 
-// -----------------------------
-// PRELOAD — with corrected asset paths
-// -----------------------------
+// -------------------------------------------------------------
+// PRELOAD — loads all assets with correct paths
+// -------------------------------------------------------------
 function preload() {
-  // Selected indicator
+  // UI
   selectedIndicator = loadImage(F_UI + 'selected01.png');
 
   // Logos
@@ -85,20 +82,20 @@ function preload() {
     console.log('RGF Sans font loaded');
   });
 
-  // Only load Helvetica if it exists
+  // Optional secondary font
   helveticaFont = loadFont(F_FONTS + 'HelveticaNeueLTPro-Roman.ttf');
 }
 
-// -----------------------------
+// -------------------------------------------------------------
 // SETUP
-// -----------------------------
+// -------------------------------------------------------------
 function setup() {
   document.body.style.margin = '0';
   document.body.style.padding = '0';
   document.body.style.overflowX = 'hidden';
   document.body.style.overflowY = 'auto';
 
-  // Create main container
+  // Main container
   let mainContainer = createDiv();
   mainContainer.id('mainContainer');
   mainContainer.style('width', '100%');
@@ -145,7 +142,6 @@ function setup() {
   ui.style('align-self', 'flex-start');
   ui.parent(editorContainer);
 
-  // Title
   let title = createElement('h1', 'Dare We Generator');
   title.parent(ui);
   title.style('margin-top', '0');
@@ -166,11 +162,9 @@ function setup() {
   canvasContainer.style('min-width', '0');
   canvasContainer.parent(editorContainer);
 
-  // Calculate canvas scale
   calculateScaleRatio();
   updateCanvasSize();
 
-  // Create canvas
   canvas = createCanvas(canvasW, canvasH);
   canvas.parent(canvasContainer);
 
@@ -178,36 +172,49 @@ function setup() {
   textAlign(LEFT, TOP);
   textWrap(WORD);
 
-  // Build UI
   createUI(ui);
   addStyles();
   updateWrappedText();
 }
 
-// -----------------------------
+// -------------------------------------------------------------
 // DRAW
-// -----------------------------
+// -------------------------------------------------------------
 function draw() {
   scale(scaleRatio);
   background(bgColor);
 
-  // (Your existing draw logic remains unchanged)
+  // (Your existing draw logic for logo/text/illustration goes here)
 }
 
-// -----------------------------
-// CREATE UI — with correct UI paths
-// -----------------------------
+// -------------------------------------------------------------
+// CREATE UI — all paths corrected
+// -------------------------------------------------------------
 function createUI(ui) {
-  // Example of a single fix: the background track uses your correct folder
+  // Sliders
   let sizeSliderContainer = createDiv();
   sizeSliderContainer.style('background-image', 'url(' + F_UI + 'vector2.png)');
   let sizeHandle = createImg(F_UI + 'handle.png', 'slider handle');
   sizeHandle.style('display', 'none');
+
+  let illuSliderContainer = createDiv();
+  illuSliderContainer.style('background-image', 'url(' + F_UI + 'vector2.png)');
+  let illuHandle = createImg(F_UI + 'handle.png', 'slider handle');
+  illuHandle.style('display', 'none');
+
+  let illuYSliderContainer = createDiv();
+  illuYSliderContainer.style('background-image', 'url(' + F_UI + 'vector2.png)');
+  let illuYHandle = createImg(F_UI + 'handle.png', 'slider handle');
+  illuYHandle.style('display', 'none');
+
+  // Color indicator
+  let indicator = createImg(F_UI + 'selected01.png', 'selected');
+  indicator.style('display', 'none');
 }
 
-// -----------------------------
-// ADD STYLES — correct font path
-// -----------------------------
+// -------------------------------------------------------------
+// ADD STYLES
+// -------------------------------------------------------------
 function addStyles() {
   let style = document.createElement('style');
   style.textContent = `
@@ -222,13 +229,19 @@ function addStyles() {
       background-color: #f5f5f5;
       overflow-x: hidden;
     }
+
+    h1 {
+      font-family: 'RGF Sans';
+      font-size: 1.5em;
+      color: #333;
+    }
   `;
   document.head.appendChild(style);
 }
 
-// -----------------------------
-// SCALE + WINDOW RESIZE
-// -----------------------------
+// -------------------------------------------------------------
+// SCALE + RESIZE
+// -------------------------------------------------------------
 let scaleRatio = 0.5;
 let canvasW, canvasH;
 
