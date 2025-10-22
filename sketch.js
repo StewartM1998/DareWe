@@ -128,4 +128,366 @@ let _resizeObserver;
 function setup(){
   const main = createDiv().id('mainContainer');
   main.parent('app');
-  main.style('width'
+  main.style('width','100%');
+  main.style('display','flex');
+  main.style('flex-direction','column');
+  main.style('align-items','center');
+
+  wallContainer = createDiv().id('wallContainer');
+  wallContainer.parent(main);
+  wallContainer.style('width','100%');
+  wallContainer.style('max-width','1200px');
+  wallContainer.style('padding','10px');
+  wallContainer.style('background-color','#f5f5f5');
+  wallContainer.style('margin-bottom','5px');
+  wallContainer.style('display','flex');
+  wallContainer.style('flex-direction','column');
+  wallContainer.style('align-items','center');
+
+  const posterGrid = createDiv().id('posterGrid');
+  posterGrid.parent(wallContainer);
+  posterGrid.style('display','grid');
+  posterGrid.style('grid-template-columns','repeat(auto-fill, minmax(300px, 1fr))');
+  posterGrid.style('grid-gap','20px');
+  posterGrid.style('grid-auto-rows','auto');
+  posterGrid.style('width','100%');
+  posterGrid.style('padding','10px');
+
+  const editor = createDiv().id('editorContainer');
+  editor.parent(main);
+  editor.style('width','100%');
+  editor.style('max-width','1200px');
+  editor.style('display','flex');
+  editor.style('flex-direction','row');
+  editor.style('margin-bottom','5px');
+  editor.style('gap','20px');
+
+  const ui = createDiv().id('uiPanel');
+  ui.parent(editor);
+  ui.style('width','350px'); ui.style('min-width','350px');
+  ui.style('background','#fff'); ui.style('padding','15px');
+  ui.style('box-shadow','0 2px 10px rgba(0,0,0,0.1)');
+  ui.style('border-radius','8px'); ui.style('overflow-y','auto');
+  ui.style('position','sticky'); ui.style('top','15px'); ui.style('align-self','flex-start');
+
+  const title = createElement('h1','Dare We generator'); title.parent(ui);
+  title.style('margin-top','0'); title.style('margin-bottom','20px'); title.style('color','#333');
+
+  const cc = createDiv().id('canvasContainer');
+  cc.parent(editor);
+  cc.style('flex-grow','1'); cc.style('background-color','#fff');
+  cc.style('padding','10px'); cc.style('border-radius','8px');
+  cc.style('box-shadow','0 2px 10px rgba(0,0,0,0.1)');
+  cc.style('display','flex'); cc.style('justify-content','center'); cc.style('align-items','center'); cc.style('min-width','0');
+
+  // EMBED: hide/cap wall
+  if (EMBED_MODE){
+    if (!SHOW_WALL) {
+      wallContainer.style('display','none');
+    } else {
+      wallContainer.style('max-height', WALL_MAX_HEIGHT+'px');
+      wallContainer.style('overflow','auto');
+      wallContainer.style('margin-bottom','8px');
+    }
+  }
+
+  calculateScaleRatio();
+  updateCanvasSize();
+
+  canvas = createCanvas(canvasW, canvasH);
+  canvas.parent(cc);
+
+  textFont(rgfFont);
+  textAlign(LEFT, TOP);
+  textWrap(WORD);
+
+  createUI(ui);
+  updateWrappedText();
+  addStyles();
+  applyRGFFontToHeaders();
+  updateSelectedColorIndicator();
+  loadSavedPosters();
+  setupEventListeners();
+  adjustContainerForPosterSize();
+  updateLineLimitDisplay();
+  initializeSliderPositions();
+  enforceLayoutRestrictions();
+  updateLayoutOptions();
+
+  // EMBED: observe container size changes
+  if (EMBED_MODE && 'ResizeObserver' in window){
+    const ccEl = document.getElementById('canvasContainer');
+    _resizeObserver = new ResizeObserver(()=>{ calculateScaleRatio(); updateCanvasSize(); });
+    if (ccEl) _resizeObserver.observe(ccEl);
+  }
+}
+
+function draw(){
+  scale(scaleRatio);
+  background(bgColor);
+
+  const posterWidth  = posterSizes[posterSize].width;
+  const posterHeight = posterSizes[posterSize].height;
+
+  const positions = textPositions[layout][posterSize];
+  const headerPos = headerPositions[layout][posterSize];
+  const footerPos = footerPositions[layout][posterSize];
+  const illuPos   = illustrationPositions[layout][posterSize];
+
+  const palette = colorPalette[bgColor];
+  const styleIdx= colors[bgColor];
+
+  blendMode(BLEND);
+  noTint();
+  image(logos[styleIdx.logoIdx], headerPos.leftX, headerPos.y, 130, 130);
+  if (bgColor==='#400d60' || bgColor==='#2737a2'){
+    image(logosRight2, posterWidth - headerPos.rightX - 130, headerPos.y, 130, 85);
+  } else {
+    image(logosRight,  posterWidth - headerPos.rightX - 130, headerPos.y, 130, 85);
+  }
+
+  const illuH  = 700 * illustrationScale;
+  const illuImg= illustrationImgs[illustrationCategory][styleIdx.illuIdx];
+  const illuW  = illuImg.width * (illuH / illuImg.height);
+  image(illuImg, illustrationX, posterHeight - illuH - illuPos.bottomOffset + illustrationY, illuW + 200, illuH + 200);
+
+  textSize(35); fill(palette.footer);
+  const footerLeftX  = footerPos.leftX;
+  const footerRightX = posterWidth - footerPos.rightX;
+  textAlign(LEFT);  text('Reykjavik', footerLeftX,               posterHeight - footerPos.y - 35);
+  textAlign(CENTER);text('Global forum', posterWidth/2,          posterHeight - footerPos.centerY - 35);
+  textAlign(RIGHT); text('2025',        footerRightX,            posterHeight - footerPos.y - 35);
+  textAlign(LEFT);
+
+  const maxLines = getMaxLines();
+
+  if (layout===1){
+    textSize(110); textLeading(positions.leading);
+    fill(palette.block2);
+    text(hashtagText, positions.hashtagX, positions.hashtagY);
+    fill(palette.block3);
+    for (let i=0;i<Math.min(wrappedMainText.length, maxLines);i++){
+      text(wrappedMainText[i], positions.mainTextX, positions.mainTextY + i*positions.leading);
+    }
+  } else {
+    textSize(110); textAlign(RIGHT); textLeading(positions.leading);
+    fill(palette.block1);
+    text("REYKJAVIK\nGLOBAL FORUM\n2025", positions.titleX, positions.titleY);
+    textAlign(LEFT); fill(palette.block2); textSize(110);
+    text(hashtagText, positions.hashtagX, positions.hashtagY);
+    fill(palette.block3);
+    for (let i=0;i<Math.min(wrappedMainText.length, maxLines);i++){
+      text(wrappedMainText[i], positions.mainTextX, positions.mainTextY + i*positions.leading);
+    }
+  }
+}
+
+// ---------- Text helpers ----------
+function createCharacterLimitedText(inputText, cpl){
+  if (!inputText || !inputText.length) return ['Type your text here'];
+  let lines=[], i=0;
+  while (i < inputText.length){
+    let end = Math.min(i + cpl, inputText.length);
+    if (end < inputText.length && inputText[end] !== ' '){
+      const lastSpace = inputText.lastIndexOf(' ', end);
+      if (lastSpace > i) end = lastSpace + 1;
+    }
+    lines.push( inputText.substring(i, end).trim() );
+    i = end;
+  }
+  return lines;
+}
+function updateWrappedText(){
+  const cpl = getCharsPerLine();
+  wrappedHashtagText = createCharacterLimitedText(hashtagText, cpl);
+  const def = 'share your ideas and Feature the voices Here';
+  wrappedMainText = createCharacterLimitedText( (mainText && mainText.length>0)? mainText: def, cpl);
+}
+function wouldExceedLineLimit(currentText, newChar){
+  const cpl = getCharsPerLine();
+  const lines = createCharacterLimitedText(currentText + newChar, cpl);
+  return lines.length > getMaxLines();
+}
+
+// ---------- Saved posters ----------
+function loadSavedPosters(){
+  const s = localStorage.getItem('rgfSavedPosters');
+  if (!s) return;
+  try{
+    savedPosters = JSON.parse(s);
+    for (let i=savedPosters.length-1; i>=0; i--) displayPosterInWall(savedPosters[i], true);
+  }catch(e){ console.error(e); localStorage.removeItem('rgfSavedPosters'); savedPosters=[]; }
+}
+function displayPosterInWall(posterData, addToTop=false){
+  const posterGrid = select('#posterGrid'); if (!posterGrid) return;
+  const box = createDiv().addClass('poster-thumbnail');
+  if (posterData.posterSize==='Landscape') box.addClass('landscape');
+  const img = createImg(posterData.dataUrl,'Saved poster');
+  img.style('width','100%'); img.style('height','auto'); img.style('display','block'); img.parent(box);
+  box.mousePressed(()=>{
+    const ix = savedPosters.findIndex(p=>p.dataUrl===posterData.dataUrl);
+    if (ix!==-1){ savedPosters.splice(ix,1); localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters)); }
+    box.remove();
+  });
+  if (addToTop && posterGrid.elt.firstChild){ posterGrid.elt.insertBefore(box.elt, posterGrid.elt.firstChild); }
+  else box.parent(posterGrid);
+}
+
+// ---------- UI ----------
+function createUI(ui){
+  function createLabel(t,p){ const l=createDiv(t); l.parent(p); l.addClass('label'); l.style('margin-bottom','8px'); l.style('font-weight','bold'); if (fontsLoaded) l.style('font-family','"RGF Sans", sans-serif'); return l; }
+  function createSection(){ const s=createDiv(); s.addClass('ui-section'); s.parent(ui); return s; }
+
+  const posterSection = createSection();
+  createLabel('Size:', posterSection);
+  const sizeSelector = createSelect().id('posterSizeSelector');
+  sizeSelector.option('Story (1080×1920)','Story'); sizeSelector.option('Post (1080×1350)','Post');
+  sizeSelector.option('Square (1080×1080)','Square'); sizeSelector.option('Landscape (1920×1080)','Landscape');
+  sizeSelector.parent(posterSection);
+  sizeSelector.style('width','100%'); sizeSelector.style('padding','10px'); sizeSelector.style('margin-bottom','15px'); sizeSelector.style('font-size','16px');
+  sizeSelector.changed(()=>{
+    posterSize = sizeSelector.value();
+    if ((posterSize==='Square'||posterSize==='Landscape') && layout===2){ layout=1; const ls=select('#layoutSelector'); if(ls) ls.value(1); }
+    updateLayoutOptions(); calculateScaleRatio(); updateCanvasSize(); updateLineLimitDisplay(); updateWrappedText(); validateTextLength();
+  });
+
+  createLabel('Style:', posterSection);
+  const layoutSelector = createSelect().id('layoutSelector');
+  layoutSelector.option('Layout 1',1); layoutSelector.option('Layout 2',2);
+  layoutSelector.parent(posterSection);
+  layoutSelector.style('width','100%'); layoutSelector.style('padding','10px'); layoutSelector.style('margin-bottom','15px'); layoutSelector.style('font-size','16px');
+  layoutSelector.changed(()=>{
+    if (layoutSelector.value()==2 && !(posterSize==='Story' || posterSize==='Post')){ layoutSelector.value(1); layout=1; }
+    else { layout = int(layoutSelector.value()); }
+    updateWrappedText(); updateLineLimitDisplay(); validateTextLength();
+  });
+
+  const colorSection = createSection();
+  createLabel('Colour:', colorSection);
+  const colorContainer = createDiv(); colorContainer.parent(colorSection);
+  colorContainer.style('display','flex'); colorContainer.style('flex-wrap','wrap'); colorContainer.style('justify-content','center'); colorContainer.style('margin-bottom','15px');
+  Object.keys(colors).forEach(col=>{
+    const wrap = createDiv().addClass('color-button-container'); wrap.parent(colorContainer);
+    const btn = createButton('').addClass('color-button'); btn.style('background-color',col); btn.parent(wrap);
+    btn.mousePressed(()=>{ bgColor=col; updateSelectedColorIndicator(); });
+    const ind = createImg(F_UI+'selected01.png','selected').addClass('selected-indicator'); ind.parent(wrap);
+    colorButtons[col]=wrap;
+  });
+  updateSelectedColorIndicator();
+
+  const illuSection = createSection();
+  createLabel('Illustration:', illuSection);
+  const illuSelector = createSelect(); categories.forEach(n=>illuSelector.option(n));
+  illuSelector.parent(illuSection);
+  illuSelector.style('width','100%'); illuSelector.style('padding','10px'); illuSelector.style('margin-bottom','15px'); illuSelector.style('font-size','16px');
+  illuSelector.changed(()=> illustrationCategory = illuSelector.value());
+
+  createLabel('Scale:', illuSection);
+  const sizeSliderContainer = createDiv().id('sizeSliderContainer');
+  sizeSliderContainer.parent(illuSection);
+  sizeSliderContainer.style('position','relative'); sizeSliderContainer.style('width','100%'); sizeSliderContainer.style('height','30px'); sizeSliderContainer.style('margin-bottom','15px');
+  sizeSliderContainer.style('background-image', `url(${F_UI}vector2.png)`); sizeSliderContainer.style('background-repeat','repeat-x'); sizeSliderContainer.style('background-position','center');
+  const sizeSlider = createSlider(0.5,2,1,0.01); sizeSlider.parent(sizeSliderContainer);
+  sizeSlider.style('width','100%'); sizeSlider.style('height','30px'); sizeSlider.style('opacity','0'); sizeSlider.style('z-index','2');
+  const sizeHandle = createImg(F_UI+'handle.png','slider handle'); sizeHandle.parent(sizeSliderContainer);
+  sizeHandle.style('position','absolute'); sizeHandle.style('height','30px'); sizeHandle.style('top','0'); sizeHandle.style('left','50%'); sizeHandle.style('transform','translateX(-50%)'); sizeHandle.style('pointer-events','none');
+  sizeSlider.input(()=>{ illustrationScale=sizeSlider.value(); const percent=(sizeSlider.value()-0.5)/1.5; sizeHandle.style('left',(percent*100)+'%'); });
+
+  createLabel('Position X:', illuSection);
+  const illuSliderContainer = createDiv().id('illuSliderContainer');
+  illuSliderContainer.parent(illuSection);
+  illuSliderContainer.style('position','relative'); illuSliderContainer.style('width','100%'); illuSliderContainer.style('height','30px'); illuSliderContainer.style('margin-bottom','15px');
+  illuSliderContainer.style('background-image', `url(${F_UI}vector2.png)`); illuSliderContainer.style('background-repeat','repeat-x'); illuSliderContainer.style('background-position','center');
+  const illuSlider = createSlider(-2160,2160, illustrationX/scaleRatio); illuSlider.parent(illuSliderContainer);
+  illuSlider.style('width','100%'); illuSlider.style('height','30px'); illuSlider.style('opacity','0'); illuSlider.style('z-index','2');
+  const illuHandle = createImg(F_UI+'handle.png','slider handle'); illuHandle.parent(illuSliderContainer);
+  illuHandle.style('position','absolute'); illuHandle.style('height','30px'); illuHandle.style('top','0'); illuHandle.style('left','50%'); illuHandle.style('transform','translateX(-50%)'); illuHandle.style('pointer-events','none');
+  illuSlider.input(()=>{ illustrationX=illuSlider.value()*scaleRatio; const percent=(illuSlider.value()+2160)/4320; illuHandle.style('left',(percent*100)+'%'); });
+
+  createLabel('Position Y:', illuSection);
+  const illuYSliderContainer = createDiv().id('illuYSliderContainer');
+  illuYSliderContainer.parent(illuSection);
+  illuYSliderContainer.style('position','relative'); illuYSliderContainer.style('width','100%'); illuYSliderContainer.style('height','30px'); illuYSliderContainer.style('margin-bottom','15px');
+  illuYSliderContainer.style('background-image', `url(${F_UI}vector2.png)`); illuYSliderContainer.style('background-repeat','repeat-x'); illuYSliderContainer.style('background-position','center');
+  const illuYSlider = createSlider(-1080,1080, illustrationY/scaleRatio); illuYSlider.parent(illuYSliderContainer);
+  illuYSlider.style('width','100%'); illuYSlider.style('height','30px'); illuYSlider.style('opacity','0'); illuYSlider.style('z-index','2');
+  const illuYHandle = createImg(F_UI+'handle.png','slider handle'); illuYHandle.parent(illuYSliderContainer);
+  illuYHandle.style('position','absolute'); illuYHandle.style('height','30px'); illuYHandle.style('top','0'); illuYHandle.style('left','50%'); illuYHandle.style('transform','translateX(-50%)'); illuYHandle.style('pointer-events','none');
+  illuYSlider.input(()=>{ illustrationY=illuYSlider.value()*scaleRatio; const percent=(illuYSlider.value()+1080)/2160; illuYHandle.style('left',(percent*100)+'%'); });
+
+  const textSection = createSection();
+  const lineLabel = createLabel(`Main Text (${getMaxLines()} lines max):`, textSection); lineLabel.id('lineLimit');
+  mainTextArea = createElement('textarea'); mainTextArea.parent(textSection);
+  mainTextArea.style('width','95%'); mainTextArea.style('height','90px'); mainTextArea.style('padding','10px');
+  mainTextArea.style('border','1px solid #ccc'); mainTextArea.style('border-radius','4px'); mainTextArea.style('font-size','16px');
+  mainTextArea.style('margin-bottom','10px'); mainTextArea.style('resize','vertical');
+  mainTextArea.elt.addEventListener('keydown',(e)=>{
+    if (['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key) || e.ctrlKey || e.metaKey) return true;
+    if (wouldExceedLineLimit(mainTextArea.value(), e.key)){ e.preventDefault(); return false; }
+  });
+  mainTextArea.input(()=>{ validateTextLength(mainTextArea.value()); });
+
+  const exportSection = createSection();
+  const saveBtn = createButton('Save Poster'); saveBtn.parent(exportSection);
+  saveBtn.style('width','100%'); saveBtn.style('background-color','#2737A2'); saveBtn.style('color','white');
+  saveBtn.style('padding','15px'); saveBtn.style('border','none'); saveBtn.style('border-radius','4px');
+  saveBtn.style('cursor','pointer'); saveBtn.style('font-size','18px'); saveBtn.style('font-weight','bold');
+  if (fontsLoaded) saveBtn.style('font-family','"RGF Sans", sans-serif');
+  saveBtn.mouseOver(()=> saveBtn.style('background-color','#F8ADD2'));
+  saveBtn.mouseOut ( ()=> saveBtn.style('background-color','#2737A2'));
+  saveBtn.mousePressed(()=>{
+    const filename = `social_post_${posterSize}_${layout}`;
+    saveCanvas(filename,'jpg');
+    const dataUrl = canvas.elt.toDataURL('image/jpeg');
+    const posterData = { dataUrl, posterSize, layout, timestamp: Date.now() };
+    savedPosters.push(posterData); if (savedPosters.length>20) savedPosters.shift();
+    localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters));
+    displayPosterInWall(posterData,true);
+    const wc = document.getElementById('wallContainer');
+    if (wc) wc.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+
+  const clearBtn = createButton('Clear All Saved Posters'); clearBtn.parent(exportSection);
+  clearBtn.style('width','100%'); clearBtn.style('background-color','#db48ff'); clearBtn.style('color','white');
+  clearBtn.style('padding','10px'); clearBtn.style('border','none'); clearBtn.style('border-radius','4px');
+  clearBtn.style('cursor','pointer'); clearBtn.style('font-size','16px'); clearBtn.style('margin-top','10px');
+  if (fontsLoaded) clearBtn.style('font-family','"RGF Sans", sans-serif');
+  clearBtn.mouseOver(()=> clearBtn.style('background-color','#A4E5D8'));
+  clearBtn.mouseOut ( ()=> clearBtn.style('background-color','#db48ff'));
+  clearBtn.mousePressed(()=>{
+    savedPosters=[]; localStorage.removeItem('rgfSavedPosters');
+    const grid = select('#posterGrid'); if (grid){ while (grid.elt.firstChild) grid.elt.removeChild(grid.elt.firstChild); }
+  });
+}
+
+function updateLayoutOptions(){
+  const layoutSelector = select('#layoutSelector'); if (!layoutSelector) return;
+  const opts = layoutSelector.elt.options;
+  for (let i=0;i<opts.length;i++){
+    if (opts[i].value==='2'){ opts[i].disabled = !(['Story','Post'].includes(posterSize)); }
+  }
+}
+function validateTextLength(currentText = mainTextArea.value()){
+  const maxLines = getMaxLines();
+  const cpl = getCharsPerLine();
+  const lines = createCharacterLimitedText(currentText, cpl);
+  if (lines.length > maxLines){
+    let s=''; for (let i=0;i<maxLines;i++){ s += lines[i] + (i<maxLines-1?' ':''); }
+    mainTextArea.value(s); mainText=s;
+  } else { mainText=currentText; }
+  updateWrappedText();
+}
+
+// ---------- Scaling / resize ----------
+function calculateScaleRatio(){
+  const cc = document.getElementById('canvasContainer');
+  let availW, availH;
+  if (cc && EMBED_MODE){
+    const r = cc.getBoundingClientRect();
+    availW = Math.max(320, r.width  - 20);
+    availH = Math.max(320, r.height - 20);
+  } else {
+    let availableWidth  = windowWidth - 450;
+    if (windowWidth <= 1200) availableWidth = windowWidth - 100;
+    let availableHeight = windowHeight - 150;
+    availW = Math.max(320, availableWidth);
