@@ -1,5 +1,5 @@
 // -------------------------------------------------------------
-// DARE WE GENERATOR — Full version (GitHub Pages + Wix auto-resize)
+// DARE WE GENERATOR — Full version (GitHub Pages + Wix auto-resize, compact-on-load)
 // Folders (case-sensitive):
 //   assets/UI/              -> handle.png, logo-left0..5.png, logo-right.png, logo-right2.png, selected01.png, vector2.png
 //   assets/Fonts/           -> 200525_RGF_Sans.otf, HelveticaNeueLTPro-Roman.ttf (optional)
@@ -210,7 +210,7 @@ function setup() {
   enforceLayoutRestrictions();
   updateLayoutOptions();
 
-  // Initial height report for Wix
+  // Initial compact height report for Wix
   _dwPostHeightDebounced(30);
 }
 
@@ -343,7 +343,7 @@ function displayPosterInWall(posterData, addToTop=false) {
   if (addToTop && posterGrid.elt.firstChild) posterGrid.elt.insertBefore(box.elt, posterGrid.elt.firstChild);
   else box.parent(posterGrid);
 
-  _dwPostHeightDebounced(30); // report new height to Wix
+  _dwPostHeightDebounced(30); // report height to Wix after adding
 }
 
 // ---------- UI ----------
@@ -676,26 +676,53 @@ function enforceLayoutRestrictions() {
   const layoutSelector = select('#layoutSelector'); if (layoutSelector) layoutSelector.value(layout);
 }
 
-// ---------- EMBED RESIZE COMMUNICATION (auto iframe height) ----------
+// ---------- Desired height calculator (compact editor vs full) ----------
+function _dwGetDesiredHeight(pad = 0) {
+  const main = document.getElementById('mainContainer');
+  const editor = document.getElementById('editorContainer');
+  const grid = document.getElementById('posterGrid');
+
+  if (!main || !editor) {
+    const h = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+    return h + pad;
+  }
+
+  const hasPosters = grid && grid.children && grid.children.length > 0;
+
+  if (!hasPosters) {
+    const mainRect = main.getBoundingClientRect();
+    const editorRect = editor.getBoundingClientRect();
+    const compactHeight = (editorRect.bottom - mainRect.top) + pad;
+    return Math.max(compactHeight, 600);
+  }
+
+  const fullH = Math.max(main.scrollHeight, document.documentElement.scrollHeight, document.body.scrollHeight);
+  return fullH + pad;
+}
+
+// ---------- EMBED RESIZE COMMUNICATION (auto iframe height, compact-on-load) ----------
 let __dw_resizeTO, __dw_heartbeatCount = 0;
 
 function _dwPostHeight(pad = 0) {
   if (window.parent === window) return; // not in an iframe
-  const h = Math.max(
-    document.documentElement.scrollHeight,
-    document.body.scrollHeight
-  );
-  window.parent.postMessage({ type: 'DW_HEIGHT', height: h + pad }, '*');
+  const h = _dwGetDesiredHeight(pad);
+  window.parent.postMessage({ type: 'DW_HEIGHT', height: h }, '*');
 }
 function _dwPostHeightDebounced(pad = 0) {
   clearTimeout(__dw_resizeTO);
   __dw_resizeTO = setTimeout(() => _dwPostHeight(pad), 60);
 }
+// On load, send a few compact updates (fonts/images settle)
 window.addEventListener('load', () => {
   const t = setInterval(() => {
     _dwPostHeight(30);
-    if (++__dw_heartbeatCount > 10) clearInterval(t);
-  }, 250);
+    if (++__dw_heartbeatCount > 6) clearInterval(t);
+  }, 200);
 });
-const __dwObserver = new MutationObserver(() => _dwPostHeightDebounced(30));
-__dwObserver.observe(document.body, { childList: true, subtree: true, attributes: true });
+// Only watch poster grid for growth (so it grows when posters appear)
+(function attachGridObserver() {
+  const grid = document.getElementById('posterGrid');
+  if (!grid) { setTimeout(attachGridObserver, 200); return; }
+  const obs = new MutationObserver(() => _dwPostHeightDebounced(30));
+  obs.observe(grid, { childList: true, subtree: false });
+})();
