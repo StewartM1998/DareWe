@@ -158,12 +158,14 @@ editor.style('width','100%');
 editor.style('max-width','1200px');
 editor.style('display','flex');
 editor.style('flex-direction','row');
-editor.style('align-items','flex-end'); // bottom edges align
+editor.style('align-items','stretch'); // both sides equal height
 editor.style('margin-bottom','5px');
 editor.style('gap','20px');
 
 const ui = createDiv().id('uiPanel');
 ui.parent(editor);
+ui.style('flex','1'); // 👈 allow UI panel to stretch
+
 ui.style('width','350px');
 ui.style('min-width','350px');
 ui.style('background','#ffffff');
@@ -183,6 +185,8 @@ title.style('color','#333');
 
 const cc = createDiv().id('canvasContainer');
 cc.parent(editor);
+cc.style('flex','1'); // 👈 allow poster area to stretch too
+
 cc.style('flex-grow','1');
 cc.style('background-color','#ffffff');
 cc.style('padding','10px');
@@ -649,7 +653,7 @@ body { margin:0; padding:0; overflow-x:hidden; overflow-y:auto; background-color
 .poster-thumbnail img { width:100%; height:auto; display:block; }
 .poster-thumbnail.landscape { grid-column:1 / -1; }
 #posterGrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); grid-gap:20px; grid-auto-rows:auto; width:100%; padding:20px; }
-#uiPanel { width:350px; min-width:350px; position:sticky; top:20px; align-self:flex-start; }
+#uiPanel { width:350px; min-width:350px; position:sticky; top:20px;  }
 #canvasContainer { display:flex; justify-content:center; align-items:center; min-width:0; }
 canvas { max-width:100%; height:auto !important; object-fit:contain; }
 #editorContainer.landscape-mode { max-width:1600px; }
