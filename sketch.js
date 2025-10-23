@@ -122,7 +122,7 @@ main.style('display','flex');
 main.style('flex-direction','column');
 main.style('align-items','center');
 
-// CHANGED: Added fixed height and scroll to wall container
+// FIXED: Poster wall with forced scrolling
 wallContainer = createDiv().id('wallContainer');
 wallContainer.parent(main);
 wallContainer.style('width','100%');
@@ -133,9 +133,12 @@ wallContainer.style('margin-bottom','5px');
 wallContainer.style('display','flex');
 wallContainer.style('flex-direction','column');
 wallContainer.style('align-items','center');
-wallContainer.style('max-height','800px');      // CHANGED: Fixed height
-wallContainer.style('overflow-y','auto');        // CHANGED: Scrollable
-wallContainer.style('overflow-x','hidden');      // CHANGED: No horizontal scroll
+wallContainer.style('max-height','800px');
+wallContainer.style('min-height','400px');        // FIXED: Minimum height
+wallContainer.style('overflow-y','scroll');        // FIXED: Always show scrollbar
+wallContainer.style('overflow-x','hidden');
+wallContainer.style('-webkit-overflow-scrolling','touch'); // FIXED: Smooth mobile scroll
+wallContainer.style('border','2px solid #e0e0e0'); // FIXED: Visual boundary
 
 const posterGrid = createDiv().id('posterGrid');
 posterGrid.parent(wallContainer);
@@ -145,6 +148,7 @@ posterGrid.style('grid-gap','20px');
 posterGrid.style('grid-auto-rows','auto');
 posterGrid.style('width','100%');
 posterGrid.style('padding','10px');
+posterGrid.style('min-height','100px'); // FIXED: Force minimum height
 
 const editor = createDiv().id('editorContainer');
 editor.parent(main);
@@ -209,7 +213,7 @@ initializeSliderPositions();
 enforceLayoutRestrictions();
 updateLayoutOptions();
 
-// CHANGED: Send fixed height to Wix
+// Send fixed height to Wix
 _dwPostHeightDebounced(30);
 }
 
@@ -632,28 +636,65 @@ body { margin:0; padding:0; overflow-x:hidden; overflow-y:auto; background-color
 .selected-indicator { position:absolute; top:-10px; left:-10px; width:60px; height:60px; pointer-events:none; display:none; transform:scale(0.6); }
 .selected .selected-indicator { display:block; }
 .ui-section { margin-bottom:15px; }
-.poster-thumbnail { width:100%; cursor:pointer; }
+.poster-thumbnail { width:100%; cursor:pointer; border-radius:8px; overflow:hidden; transition:transform 0.2s; }
+.poster-thumbnail:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(0,0,0,0.2); }
 .poster-thumbnail img { width:100%; height:auto; display:block; }
 .poster-thumbnail.landscape { grid-column:1 / -1; }
-#posterGrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); grid-gap:20px; grid-auto-rows:auto; width:100%; padding:20px; }
+
+/* FIXED: Force scrolling on wall container */
+#wallContainer {
+max-height: 800px !important;
+min-height: 400px !important;
+overflow-y: scroll !important;
+overflow-x: hidden !important;
+-webkit-overflow-scrolling: touch;
+background-color: #f5f5f5 !important;
+border: 2px solid #e0e0e0 !important;
+border-radius: 8px;
+}
+
+#posterGrid { 
+display:grid; 
+grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); 
+grid-gap:20px; 
+grid-auto-rows:auto; 
+width:100%; 
+padding:20px; 
+min-height:100px;
+}
+
+/* FIXED: Custom scrollbar for poster wall */
+#wallContainer::-webkit-scrollbar { 
+width: 12px; 
+}
+#wallContainer::-webkit-scrollbar-track { 
+background: #f1f1f1; 
+border-radius: 6px; 
+margin: 5px;
+}
+#wallContainer::-webkit-scrollbar-thumb { 
+background: #2737A2; 
+border-radius: 6px; 
+border: 2px solid #f1f1f1;
+}
+#wallContainer::-webkit-scrollbar-thumb:hover { 
+background: #db48ff; 
+}
+
 #uiPanel { width:350px; min-width:350px; position:sticky; top:20px; align-self:flex-start; }
 #canvasContainer { display:flex; justify-content:center; align-items:center; min-width:0; }
 canvas { max-width:100%; height:auto !important; object-fit:contain; }
 #editorContainer.landscape-mode { max-width:1600px; }
 select option:disabled { color:#999; font-style:italic; }
 
-/* CHANGED: Custom scrollbar for poster wall */
-#wallContainer::-webkit-scrollbar { width: 10px; }
-#wallContainer::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
-#wallContainer::-webkit-scrollbar-thumb { background: #2737A2; border-radius: 5px; }
-#wallContainer::-webkit-scrollbar-thumb:hover { background: #db48ff; }
-
 @media (max-width:1200px){
 #editorContainer{ flex-direction:column; align-items:center; }
 #uiPanel{ width:100%; max-width:600px; margin-bottom:15px; position:static; }
+#wallContainer { max-height: 600px !important; }
 }
 @media (max-width:768px){
 #posterGrid{ grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); }
+#wallContainer { max-height: 500px !important; }
 }
 `;
 document.head.appendChild(style);
@@ -664,16 +705,9 @@ if (layout===2 && !(posterSize==='Story'||posterSize==='Post')) layout=1;
 const layoutSelector = select('#layoutSelector'); if (layoutSelector) layoutSelector.value(layout);
 }
 
-// CHANGED: Fixed height calculator for Wix embed
+// FIXED: Height calculator for Wix embed
 function _dwGetDesiredHeight(pad = 0) {
-const editor = document.getElementById('editorContainer');
-
-if (!editor) {
-  return 1700 + pad; // Default fallback
-}
-
-// Fixed height: wall (800px) + editor (~900px) + padding
-const FIXED_HEIGHT = 1700;
+const FIXED_HEIGHT = 1700; // Wall (800px) + Editor (~900px)
 return FIXED_HEIGHT + pad;
 }
 
