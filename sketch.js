@@ -128,20 +128,30 @@ main.style('display','flex');
 main.style('flex-direction','column');
 main.style('align-items','center');
 
-// CHANGED: Added fixed height and scroll to wall container
+// CHANGED: Create editor FIRST (so it appears at top)
+const editor = createDiv().id('editorContainer');
+editor.parent(main);
+editor.style('width','100%');
+editor.style('max-width','1200px');
+editor.style('display','flex');
+editor.style('flex-direction','row');
+editor.style('margin-bottom','5px');
+editor.style('gap','20px');
+
+// CHANGED: Create wall container SECOND (so it appears at bottom)
 wallContainer = createDiv().id('wallContainer');
 wallContainer.parent(main);
 wallContainer.style('width','100%');
 wallContainer.style('max-width','1200px');
 wallContainer.style('padding','10px');
 wallContainer.style('background-color','#f5f5f5');
-wallContainer.style('margin-bottom','5px');
+wallContainer.style('margin-top','20px');  // CHANGED: margin-top instead of margin-bottom
 wallContainer.style('display','flex');
 wallContainer.style('flex-direction','column');
 wallContainer.style('align-items','center');
-wallContainer.style('max-height','725px');      // CHANGED: Fixed height
-wallContainer.style('overflow-y','auto');        // CHANGED: Scrollable
-wallContainer.style('overflow-x','hidden');      // CHANGED: No horizontal scroll
+wallContainer.style('max-height','725px');
+wallContainer.style('overflow-y','auto');
+wallContainer.style('overflow-x','hidden');
 
 const posterGrid = createDiv().id('posterGrid');
 posterGrid.parent(wallContainer);
