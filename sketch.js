@@ -139,7 +139,7 @@ wallContainer.style('margin-bottom','5px');
 wallContainer.style('display','flex');
 wallContainer.style('flex-direction','column');
 wallContainer.style('align-items','center');
-wallContainer.style('max-height','800px');      // CHANGED: Fixed height
+wallContainer.style('max-height','750px');      // CHANGED: Fixed height
 wallContainer.style('overflow-y','auto');        // CHANGED: Scrollable
 wallContainer.style('overflow-x','hidden');      // CHANGED: No horizontal scroll
 
