@@ -139,7 +139,7 @@ wallContainer.style('margin-bottom','5px');
 wallContainer.style('display','flex');
 wallContainer.style('flex-direction','column');
 wallContainer.style('align-items','center');
-wallContainer.style('max-height','700px');      // CHANGED: Fixed height
+wallContainer.style('max-height','800px');      // CHANGED: Fixed height
 wallContainer.style('overflow-y','auto');        // CHANGED: Scrollable
 wallContainer.style('overflow-x','hidden');      // CHANGED: No horizontal scroll
 
@@ -158,7 +158,6 @@ editor.style('width','100%');
 editor.style('max-width','1200px');
 editor.style('display','flex');
 editor.style('flex-direction','row');
-editor.style('align-items','flex-end'); // bottom edges align
 editor.style('margin-bottom','5px');
 editor.style('gap','20px');
 
@@ -216,12 +215,6 @@ initializeSliderPositions();
 enforceLayoutRestrictions();
 updateLayoutOptions();
 
-
-const spacer = createDiv().id('bottomSpacer');
-spacer.parent(main);
-spacer.style('height','140px');   // Increase to 200px if still clipped
-spacer.style('width','100%');
-spacer.style('flex','0 0 auto');
 // CHANGED: Send fixed height to Wix
 _dwPostHeightDebounced(30);
 }
