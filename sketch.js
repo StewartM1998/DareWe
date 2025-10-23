@@ -158,6 +158,7 @@ editor.style('width','100%');
 editor.style('max-width','1200px');
 editor.style('display','flex');
 editor.style('flex-direction','row');
+editor.style('align-items','flex-end'); // bottom edges align
 editor.style('margin-bottom','5px');
 editor.style('gap','20px');
 
