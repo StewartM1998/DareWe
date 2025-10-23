@@ -653,7 +653,7 @@ select option:disabled { color:#999; font-style:italic; }
 #wallContainer::-webkit-scrollbar-thumb:hover { background: #db48ff; }
 
 @media (max-width:1200px){
-#editorContainer{ flex-direction:column; align-items:center;   padding-bottom: 60px;
+#editorContainer{ flex-direction:column; align-items:center;   padding-bottom: 140px;
 }
 #uiPanel{ width:100%; max-width:600px; margin-bottom:15px; position:static; }
 }
