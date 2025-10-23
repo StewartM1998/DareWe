@@ -642,21 +642,22 @@ body { margin:0; padding:0; overflow-x:hidden; overflow-y:auto; background-color
 .poster-thumbnail img { width:100%; height:auto; display:block; }
 .poster-thumbnail.landscape { grid-column:1 / -1; }
 #posterGrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); grid-gap:20px; grid-auto-rows:auto; width:100%; padding:20px; }
-#uiPanel { width:350px; min-width:350px; position:sticky; top:20px; align-self:stretch; height:900px; max-height:900px; }
-#canvasContainer { display:flex; justify-content:center; align-items:center; min-width:0; height:900px; max-height:900px; overflow:auto; }
+#uiPanel { width:350px; min-width:350px; position:sticky; top:20px; align-self:flex-start; }
+#canvasContainer { display:flex; justify-content:center; align-items:center; min-width:0; }
 canvas { max-width:100%; height:auto !important; object-fit:contain; }
 #editorContainer.landscape-mode { max-width:1600px; }
 select option:disabled { color:#999; font-style:italic; }
 
+/* CHANGED: Custom scrollbar for poster wall */
 #wallContainer::-webkit-scrollbar { width: 10px; }
 #wallContainer::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
 #wallContainer::-webkit-scrollbar-thumb { background: #2737A2; border-radius: 5px; }
 #wallContainer::-webkit-scrollbar-thumb:hover { background: #db48ff; }
 
 @media (max-width:1200px){
-#editorContainer{ flex-direction:column; align-items:center; padding-bottom: 60px; }
-#uiPanel{ width:100%; max-width:600px; margin-bottom:15px; position:static; height:auto; max-height:none; }
-#canvasContainer{ height:auto; max-height:none; }
+#editorContainer{ flex-direction:column; align-items:center;   padding-bottom: 60px;
+}
+#uiPanel{ width:100%; max-width:600px; margin-bottom:15px; position:static; }
 }
 @media (max-width:768px){
 #posterGrid{ grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); }
