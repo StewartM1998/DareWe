@@ -215,6 +215,12 @@ initializeSliderPositions();
 enforceLayoutRestrictions();
 updateLayoutOptions();
 
+
+const spacer = createDiv().id('bottomSpacer');
+spacer.parent(main);
+spacer.style('height','140px');   // Increase to 200px if still clipped
+spacer.style('width','100%');
+spacer.style('flex','0 0 auto');
 // CHANGED: Send fixed height to Wix
 _dwPostHeightDebounced(30);
 }
