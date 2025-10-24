@@ -95,7 +95,7 @@ let wrappedMainText = [];
 function preload() {
 selectedIndicator = loadImage(F_UI + 'selected01.png');
 
-for (let i=0;i<6;i++) logos[i] = loadImage(F_UI + `logo-left${i}.png`);
+for (let i=0;i<6;i++) logos[i] = loadImage(F_UI + `logo-Update${i}.png`);
 logosRight  = loadImage(F_UI + 'logo-right.png');
 logosRight2 = loadImage(F_UI + 'logo-right2.png');
 
