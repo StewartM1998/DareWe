@@ -54,7 +54,7 @@ const presetResponses = [
 
 // ---------- Character limits ----------
 const charsPerLineConfig = {
-'Story': 12, 'Post': 10, 'Square': 10, 'Landscape': 16
+'Story': 10, 'Post': 10, 'Square': 10, 'Landscape': 16
 };
 function getCharsPerLine() { return charsPerLineConfig[posterSize] || 10; }
 
@@ -305,31 +305,67 @@ if (layout === 1) {
 
 // ---------- Text wrapping helpers ----------
 function createCharacterLimitedText(inputText, charsPerLine) {
-if (!inputText || inputText.length === 0) return ['Type your text here'];
-let lines = [], currentPos = 0;
-while (currentPos < inputText.length) {
-  let endPos = Math.min(currentPos + charsPerLine, inputText.length);
-  if (endPos < inputText.length && inputText[endPos] !== ' ') {
-    let lastSpace = inputText.lastIndexOf(' ', endPos);
-    if (lastSpace > currentPos) endPos = lastSpace + 1;
+if (!inputText || inputText.length === 0) return ['Select a message...'];
+
+// Convert to uppercase for processing
+const upperText = inputText.toUpperCase();
+const words = upperText.split(' ');
+let lines = [];
+let currentLine = '';
+
+for (let i = 0; i < words.length; i++) {
+  const word = words[i];
+  const testLine = currentLine ? currentLine + ' ' + word : word;
+  
+  // Check if adding this word would exceed the character limit
+  if (testLine.length <= charsPerLine) {
+    currentLine = testLine;
+  } else {
+    // If current line is not empty, push it and start new line
+    if (currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      // Word itself is longer than charsPerLine
+      // Break the word, but try to avoid single character orphans
+      let remainingWord = word;
+      while (remainingWord.length > 0) {
+        if (remainingWord.length <= charsPerLine) {
+          currentLine = remainingWord;
+          remainingWord = '';
+        } else {
+          // Try to break at a reasonable point
+          let breakPoint = charsPerLine;
+          // Don't leave less than 3 characters on the next line
+          if (remainingWord.length - breakPoint < 3 && remainingWord.length - breakPoint > 0) {
+            breakPoint = remainingWord.length - 3;
+          }
+          lines.push(remainingWord.substring(0, breakPoint));
+          remainingWord = remainingWord.substring(breakPoint);
+        }
+      }
+    }
   }
-  lines.push(inputText.substring(currentPos, endPos).trim());
-  currentPos = endPos;
 }
+
+// Push the last line if it exists
+if (currentLine) {
+  lines.push(currentLine);
+}
+
+// Prevent orphaned single characters or very short words on last line
+if (lines.length > 1) {
+  const lastLine = lines[lines.length - 1];
+  const secondLastLine = lines[lines.length - 2];
+  
+  // If last line is very short (1-2 chars) and we can fit it on previous line
+  if (lastLine.length <= 2 && secondLastLine && (secondLastLine.length + lastLine.length + 1) <= charsPerLine + 3) {
+    lines[lines.length - 2] = secondLastLine + ' ' + lastLine;
+    lines.pop();
+  }
+}
+
 return lines;
-}
-
-function updateWrappedText() {
-const cpl = getCharsPerLine();
-wrappedHashtagText = createCharacterLimitedText(hashtagText, cpl);
-const def = 'share your ideas and Feature the voices Here';
-wrappedMainText = createCharacterLimitedText((mainText && mainText.length>0)? mainText : def, cpl);
-}
-
-function wouldExceedLineLimit(currentText, newChar) {
-const cpl = getCharsPerLine();
-const lines = createCharacterLimitedText(currentText + newChar, cpl);
-return lines.length > getMaxLines();
 }
 
 // ---------- Saved posters wall ----------
