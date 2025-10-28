@@ -49,7 +49,16 @@ const presetResponses = [
 "empower women to attain & retain power",
 "end gender-based violence",
 "fight for equal parental leave",
-"turn ideas into action"
+"turn ideas into action",
+"power together for change",
+"build an equal world",
+"believe in the power of collective action",
+"use this blueprint for progress",
+"demand equal pay",
+"insist on end to all gender based violence",
+"demand equal representation",
+"make a difference",
+"add our voice"
 ];
 
 // ---------- Character limits ----------
@@ -305,11 +314,9 @@ if (layout === 1) {
 
 // ---------- Text wrapping helpers ----------
 function createCharacterLimitedText(inputText, charsPerLine) {
-if (!inputText || inputText.length === 0) return ['Select a message...'];
+if (!inputText || inputText.length === 0) return [''];
 
-// Convert to uppercase for processing
-const upperText = inputText.toUpperCase();
-const words = upperText.split(' ');
+const words = inputText.split(' ');
 let lines = [];
 let currentLine = '';
 
@@ -317,55 +324,37 @@ for (let i = 0; i < words.length; i++) {
   const word = words[i];
   const testLine = currentLine ? currentLine + ' ' + word : word;
   
-  // Check if adding this word would exceed the character limit
   if (testLine.length <= charsPerLine) {
     currentLine = testLine;
   } else {
-    // If current line is not empty, push it and start new line
     if (currentLine) {
       lines.push(currentLine);
       currentLine = word;
     } else {
-      // Word itself is longer than charsPerLine
-      // Break the word, but try to avoid single character orphans
-      let remainingWord = word;
-      while (remainingWord.length > 0) {
-        if (remainingWord.length <= charsPerLine) {
-          currentLine = remainingWord;
-          remainingWord = '';
-        } else {
-          // Try to break at a reasonable point
-          let breakPoint = charsPerLine;
-          // Don't leave less than 3 characters on the next line
-          if (remainingWord.length - breakPoint < 3 && remainingWord.length - breakPoint > 0) {
-            breakPoint = remainingWord.length - 3;
-          }
-          lines.push(remainingWord.substring(0, breakPoint));
-          remainingWord = remainingWord.substring(breakPoint);
-        }
+      // Word is longer than charsPerLine, need to break it
+      let remaining = word;
+      while (remaining.length > charsPerLine) {
+        lines.push(remaining.substring(0, charsPerLine));
+        remaining = remaining.substring(charsPerLine);
       }
+      currentLine = remaining;
     }
   }
 }
 
-// Push the last line if it exists
 if (currentLine) {
   lines.push(currentLine);
 }
 
-// Prevent orphaned single characters or very short words on last line
-if (lines.length > 1) {
-  const lastLine = lines[lines.length - 1];
-  const secondLastLine = lines[lines.length - 2];
-  
-  // If last line is very short (1-2 chars) and we can fit it on previous line
-  if (lastLine.length <= 2 && secondLastLine && (secondLastLine.length + lastLine.length + 1) <= charsPerLine + 3) {
-    lines[lines.length - 2] = secondLastLine + ' ' + lastLine;
-    lines.pop();
-  }
+return lines.length > 0 ? lines : [''];
 }
 
-return lines;
+function updateWrappedText() {
+const cpl = getCharsPerLine();
+wrappedHashtagText = createCharacterLimitedText(hashtagText, cpl);
+const def = 'share your ideas and feature the voices here';
+const textToWrap = (mainText && mainText.length > 0) ? mainText : def;
+wrappedMainText = createCharacterLimitedText(textToWrap, cpl);
 }
 
 // ---------- Saved posters wall ----------
@@ -566,15 +555,11 @@ presetResponses.forEach(response => {
   mainTextArea.option(response, response);
 });
 
-// Set initial value if mainText exists
-if (mainText) {
-  mainTextArea.value(mainText);
-}
-
 // Update handler for dropdown
 mainTextArea.changed(() => {
   const selectedText = mainTextArea.value();
-  validateTextLength(selectedText);
+  mainText = selectedText;
+  updateWrappedText();
 });
 
 const exportSection = createSection();
@@ -624,20 +609,7 @@ for (let i=0;i<options.length;i++) {
 }
 }
 
-function validateTextLength(currentText = mainTextArea.value()) {
-const maxLines = getMaxLines();
-const cpl = getCharsPerLine();
-const lines = createCharacterLimitedText(currentText, cpl);
-
-if (lines.length > maxLines) {
-  let s = '';
-  for (let i = 0; i < maxLines; i++) {
-    s += lines[i] + (i < maxLines - 1 ? ' ' : '');
-  }
-  mainText = s;
-} else {
-  mainText = currentText;
-}
+function validateTextLength() {
 updateWrappedText();
 }
 
@@ -761,10 +733,9 @@ function _dwGetDesiredHeight(pad = 0) {
 const editor = document.getElementById('editorContainer');
 
 if (!editor) {
-  return 1700 + pad; // Default fallback
+  return 1700 + pad;
 }
 
-// Fixed height: editor (~900px) + wall (800px) + padding
 const FIXED_HEIGHT = 1700;
 return FIXED_HEIGHT + pad;
 }
