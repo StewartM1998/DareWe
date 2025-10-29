@@ -431,7 +431,7 @@ layoutSelector.changed(()=>{
 });
 
 const colorSection = createSection();
-createLabel('Colour:', colorSection);
+createLabel('Theme:', colorSection);
 const colorContainer = createDiv();
 colorContainer.parent(colorSection);
 colorContainer.style('display','flex'); colorContainer.style('flex-wrap','wrap');
