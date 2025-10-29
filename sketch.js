@@ -446,6 +446,37 @@ Object.keys(colors).forEach(col=>{
 });
 updateSelectedColorIndicator();
 
+// ---------- TEXT SECTION WITH DROPDOWN ----------
+const textSection = createSection();
+const lineLabel = createLabel(`Main Text:`, textSection);
+lineLabel.id('lineLimit');
+
+// Create dropdown instead of textarea
+mainTextArea = createSelect().id('mainTextSelector');
+mainTextArea.parent(textSection);
+mainTextArea.style('width','100%');
+mainTextArea.style('padding','10px');
+mainTextArea.style('border','1px solid #ccc');
+mainTextArea.style('border-radius','4px');
+mainTextArea.style('font-size','16px');
+mainTextArea.style('margin-bottom','10px');
+
+// Add default option
+mainTextArea.option('Select a message...', '');
+
+// Add all preset responses
+presetResponses.forEach(response => {
+  mainTextArea.option(response, response);
+});
+
+// Update handler for dropdown
+mainTextArea.changed(() => {
+  const selectedText = mainTextArea.value();
+  mainText = selectedText;
+  updateWrappedText();
+});
+
+   //----illustration section--------
 const illuSection = createSection();
 createLabel('Illustration:', illuSection);
 const illuSelector = createSelect(); categories.forEach(n=>illuSelector.option(n));
@@ -520,35 +551,7 @@ illuYSlider.input(()=>{
   illuYHandle.style('left', (percent*100)+'%');
 });
 
-// ---------- TEXT SECTION WITH DROPDOWN ----------
-const textSection = createSection();
-const lineLabel = createLabel(`Main Text:`, textSection);
-lineLabel.id('lineLimit');
 
-// Create dropdown instead of textarea
-mainTextArea = createSelect().id('mainTextSelector');
-mainTextArea.parent(textSection);
-mainTextArea.style('width','100%');
-mainTextArea.style('padding','10px');
-mainTextArea.style('border','1px solid #ccc');
-mainTextArea.style('border-radius','4px');
-mainTextArea.style('font-size','16px');
-mainTextArea.style('margin-bottom','10px');
-
-// Add default option
-mainTextArea.option('Select a message...', '');
-
-// Add all preset responses
-presetResponses.forEach(response => {
-  mainTextArea.option(response, response);
-});
-
-// Update handler for dropdown
-mainTextArea.changed(() => {
-  const selectedText = mainTextArea.value();
-  mainText = selectedText;
-  updateWrappedText();
-});
 
 const exportSection = createSection();
 const saveBtn = createButton('Save Poster');
