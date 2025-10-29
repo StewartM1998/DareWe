@@ -34,6 +34,8 @@ const categories = ["Cake", "Eye", "FlowerA", "FlowerB", "FlowerC", "HandA", "Ha
 
 // ---------- Preset responses for dropdown ----------
 const presetResponses = [
+"Power, together"
+"Attain & retain power"
 "Lead in the workplace",
 "Pave paths never taken",
 "Do it for the women who could not",
