@@ -643,7 +643,7 @@ if (colorButtons[bgColor]) colorButtons[bgColor].addClass('selected');
 
 function updateLineLimitDisplay() {
 const lineLabel = select('#lineLimit');
-if (lineLabel) lineLabel.html(`Main Text (${getMaxLines()} lines max):`);
+if (lineLabel) lineLabel.html(`Main Text:`);
 }
 
 function initializeSliderPositions() {
