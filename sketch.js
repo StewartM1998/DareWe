@@ -453,15 +453,14 @@ const textSection = createSection();
 const lineLabel = createLabel(`Main Text:`, textSection);
 lineLabel.id('lineLimit');
 
+//  instead of textarea
 // Create dropdown instead of textarea
 mainTextArea = createSelect().id('mainTextSelector');
 mainTextArea.parent(textSection);
 mainTextArea.style('width','100%');
 mainTextArea.style('padding','10px');
-mainTextArea.style('border','1px solid #ccc');
-mainTextArea.style('border-radius','4px');
+mainTextArea.style('margin-bottom','15px');
 mainTextArea.style('font-size','16px');
-mainTextArea.style('margin-bottom','10px');
 
 // Add default option
 mainTextArea.option('Select a message...', '');
