@@ -82,7 +82,7 @@ const lineLimits = {
 1:{'Story':10,'Post':6,'Square':4,'Landscape':4},
 2:{'Story':5,'Post':4,'Square':4,'Landscape':4}
 };
-//function getMaxLines(){ return lineLimits[layout][posterSize] || 4; }
+function getMaxLines(){ return lineLimits[layout][posterSize] || 4; }
 
 // ---------- Poster dimensions ----------
 const posterSizes = {
@@ -522,7 +522,7 @@ illuYSlider.input(()=>{
 
 // ---------- TEXT SECTION WITH DROPDOWN ----------
 const textSection = createSection();
-const lineLabel = createLabel(`Main Text (${getMaxLines()} lines max):`, textSection);
+const lineLabel = createLabel(`Main Text:`, textSection);
 lineLabel.id('lineLimit');
 
 // Create dropdown instead of textarea
