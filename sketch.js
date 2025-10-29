@@ -44,21 +44,9 @@ const presetResponses = [
 "speak loud and proud",
 "stand with the LGBTQ+ community",
 "create communities that drive change",
-"inspire others",
-"spark our network",
-"empower women to attain & retain power",
-"end gender-based violence",
+"end gender based violence",
 "fight for equal parental leave",
 "turn ideas into action",
-"power together for change",
-"build an equal world",
-"believe in the power of collective action",
-"use this blueprint for progress",
-"demand equal pay",
-"insist on end to all gender based violence",
-"demand equal representation",
-"make a difference",
-"add our voice"
 ];
 
 // ---------- Character limits ----------
