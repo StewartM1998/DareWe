@@ -82,7 +82,7 @@ const lineLimits = {
 1:{'Story':10,'Post':6,'Square':4,'Landscape':4},
 2:{'Story':5,'Post':4,'Square':4,'Landscape':4}
 };
-function getMaxLines(){ return lineLimits[layout][posterSize] || 4; }
+//function getMaxLines(){ return lineLimits[layout][posterSize] || 4; }
 
 // ---------- Poster dimensions ----------
 const posterSizes = {
