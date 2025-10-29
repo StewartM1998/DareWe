@@ -402,7 +402,7 @@ sizeSelector.option('Post (1080×1350)','Post');
 sizeSelector.option('Square (1080×1080)','Square');
 sizeSelector.option('Landscape (1920×1080)','Landscape');
 sizeSelector.parent(posterSection);
-sizeSelector.style('width','100%'); sizeSelector.style('padding','10px');
+sizeSelector.style('width','100%'); sizeSelector.style('padding','12px 40px 12px 12px');
 sizeSelector.style('margin-bottom','15px'); sizeSelector.style('font-size','16px');
 sizeSelector.changed(()=>{
   posterSize = sizeSelector.value();
