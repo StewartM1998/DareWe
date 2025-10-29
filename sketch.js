@@ -51,7 +51,7 @@ const presetResponses = [
 
 // ---------- Character limits ----------
 const charsPerLineConfig = {
-'Story': 9, 'Post': 9, 'Square': 9, 'Landscape': 16
+'Story': 9, 'Post': 9, 'Square': 9, 'Landscape': 24
 };
 function getCharsPerLine() { return charsPerLineConfig[posterSize] || 10; }
 
