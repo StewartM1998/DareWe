@@ -34,19 +34,19 @@ const categories = ["Cake", "Eye", "FlowerA", "FlowerB", "FlowerC", "HandA", "Ha
 
 // ---------- Preset responses for dropdown ----------
 const presetResponses = [
-"lead in the workplace",
-"pave paths never taken",
-"do it for the women who could not",
-"empower the next generation",
-"break gender stereotypes",
-"refuse to be silent",
-"honour those who fought for our rights",
-"speak loud and proud",
-"stand with the LGBTQ+ community",
-"create communities that drive change",
-"end gender based violence",
-"fight for equal parental leave",
-"turn ideas into action",
+"Lead in the workplace",
+"Pave paths never taken",
+"Do it for the women who could not",
+"Empower the next generation",
+"Break gender stereotypes",
+"Refuse to be silent",
+"Honour those who fought for our rights",
+"Speak loud and proud",
+"Stand with the LGBTQ+ community",
+"Create communities that drive change",
+"End gender based violence",
+"Fight for equal parental leave",
+"Turn ideas into action",
 ];
 
 // ---------- Character limits ----------
