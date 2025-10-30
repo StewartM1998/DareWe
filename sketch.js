@@ -36,16 +36,14 @@ const categories = ["Cake", "Eye", "FlowerA", "FlowerB", "FlowerC", "HandA", "Ha
 const presetResponses = {
 all: [
   "Lead in the workplace",
-  "Pave paths never taken",
   "Do it for the women who could not",
   "Empower the next generation",
-  "Break gender stereotypes",
-  "Refuse to be silent",
-  "Honour those who fought for our rights",
   "Speak loud and proud",
-  "Stand with the LGBTQ+ community",
-  "End gender based violence",
+  "Turn ideas into action",
+  "Build an equal world",
+  "Demand equal pay",
   "Fight for equal parental leave",
+  "End gender-based violence",
 ],
 squareAndLandscape: [
   "Demand equal representation",
