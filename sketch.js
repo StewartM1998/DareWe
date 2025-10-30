@@ -37,18 +37,20 @@ const presetResponses = [
 "Power, together",
 "Attain and retain power",
 "Lead in the workplace",
-"Pave paths never taken",
-"Do it for the women who could not",
 "Empower the next generation",
-"Break gender stereotypes",
-"Refuse to be silent",
-"Honour those who fought for our rights",
 "Speak loud and proud",
-"Stand with the LGBTQ+ community",
 "Create communities that drive change",
-"End gender based violence",
-"Fight for equal parental leave",
 "Turn ideas into action",
+"Build an equal world",
+"Believe in the power of collective action",
+"Demand equal pay",
+"Fight for equal parental leave",
+"End gender based violence",
+"Demand equal representation",
+"Inspire others and help each other grow",
+"Empower women to attain & retain power",
+"Turn ideas into actionable plans for change",
+
 ];
 
 // ---------- Character limits ----------
