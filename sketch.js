@@ -43,7 +43,7 @@ all: [
   "Build an equal world",
   "Demand equal pay",
   "Fight for equal parental leave",
-  "End gender-based violence",
+  "End gender based violence",
 ],
 squareAndLandscape: [
   "Demand equal representation",
