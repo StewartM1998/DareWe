@@ -1,4 +1,4 @@
-// -------------------------------------------------------------
+/ -------------------------------------------------------------
 // DARE WE GENERATOR — Wix-optimized version with scrollable poster wall
 // -------------------------------------------------------------
 
@@ -33,25 +33,31 @@ const F_ILLU = 'assets/Illustrations/';
 const categories = ["Cake", "Eye", "FlowerA", "FlowerB", "FlowerC", "HandA", "HandB", "HandC", "Lip", "Question"];
 
 // ---------- Preset responses for dropdown ----------
-const presetResponses = [
-"Power, together",
-"Attain and retain power",
-"Lead in the workplace",
-"Empower the next generation",
-"Speak loud and proud",
-"Create communities that drive change",
-"Turn ideas into action",
-"Build an equal world",
-"Believe in the power of collective action",
-"Demand equal pay",
-"Fight for equal parental leave",
-"End gender based violence",
-"Demand equal representation",
-"Inspire others and help each other grow",
-"Empower women to attain & retain power",
-"Turn ideas into actionable plans for change",
-
-];
+const presetResponses = {
+all: [
+  "Lead in the workplace",
+  "Pave paths never taken",
+  "Do it for the women who could not",
+  "Empower the next generation",
+  "Break gender stereotypes",
+  "Refuse to be silent",
+  "Honour those who fought for our rights",
+  "Speak loud and proud",
+  "Stand with the LGBTQ+ community",
+  "End gender based violence",
+  "Fight for equal parental leave",
+],
+squareAndLandscape: [
+  "Demand equal representation",
+],
+landscapeOnly: [
+  "Create communities that drive change",
+  "Believe in the power of collective action",
+  "Inspire others and help each other grow",
+  "Empower women to attain and retain power",
+  "Turn ideas into actionable plans for change",
+]
+};
 
 // ---------- Character limits ----------
 const charsPerLineConfig = {
@@ -70,13 +76,13 @@ const footerPositions = {
 };
 const textPositions = {
 1:{'Story':{hashtagX:40,hashtagY:360,mainTextX:417,mainTextY:480,leading:115},
-   'Post':{hashtagX:40,hashtagY:280,mainTextX:417,mainTextY:400,leading:115},
-   'Square':{hashtagX:40,hashtagY:240,mainTextX:417,mainTextY:360,leading:115},
-   'Landscape':{hashtagX:40,hashtagY:340,mainTextX:420,mainTextY:450,leading:115}},
+ 'Post':{hashtagX:40,hashtagY:280,mainTextX:417,mainTextY:400,leading:115},
+ 'Square':{hashtagX:40,hashtagY:240,mainTextX:417,mainTextY:360,leading:115},
+ 'Landscape':{hashtagX:40,hashtagY:340,mainTextX:420,mainTextY:450,leading:115}},
 2:{'Story':{titleX:1040,titleY:365,hashtagX:40,hashtagY:1040,mainTextX:386,mainTextY:1165,leading:115},
-   'Post':{titleX:1040,titleY:270,hashtagX:40,hashtagY:688,mainTextX:420,mainTextY:800,leading:115},
-   'Square':{titleX:1040,titleY:240,hashtagX:40,hashtagY:500,mainTextX:330,mainTextY:620,leading:115},
-   'Landscape':{titleX:1880,titleY:240,hashtagX:40,hashtagY:600,mainTextX:330,mainTextY:720,leading:115}}
+ 'Post':{titleX:1040,titleY:270,hashtagX:40,hashtagY:688,mainTextX:420,mainTextY:800,leading:115},
+ 'Square':{titleX:1040,titleY:240,hashtagX:40,hashtagY:500,mainTextX:330,mainTextY:620,leading:115},
+ 'Landscape':{titleX:1880,titleY:240,hashtagX:40,hashtagY:600,mainTextX:330,mainTextY:720,leading:115}}
 };
 const illustrationPositions = {
 1:{'Story':{bottomOffset:350},'Post':{bottomOffset:200},'Square':{bottomOffset:150},'Landscape':{bottomOffset:200}},
@@ -121,10 +127,10 @@ logosRight  = loadImage(F_UI + 'logo-right.png');
 logosRight2 = loadImage(F_UI + 'logo-right2.png');
 
 for (let cat of categories){
-  illustrationImgs[cat] = [];
-  for (let i=0;i<6;i++){
-    illustrationImgs[cat][i] = loadImage(F_ILLU + `${cat}/${cat}${i}.png`);
-  }
+illustrationImgs[cat] = [];
+for (let i=0;i<6;i++){
+  illustrationImgs[cat][i] = loadImage(F_ILLU + `${cat}/${cat}${i}.png`);
+}
 }
 
 rgfFont = loadFont(F_FONTS + '200525_RGF_Sans.otf', ()=>{ fontsLoaded=true; console.log('RGF Sans font loaded'); });
@@ -254,9 +260,9 @@ blendMode(BLEND);
 noTint();
 image(logos[styleIdx.logoIdx], headerPos.leftX, headerPos.y, 130, 130);
 if (bgColor === '#400d60' || bgColor === '#2737a2') {
-  image(logosRight2, posterWidth - headerPos.rightX - 130, headerPos.y, 130, 85);
+image(logosRight2, posterWidth - headerPos.rightX - 130, headerPos.y, 130, 85);
 } else {
-  image(logosRight,  posterWidth - headerPos.rightX - 130, headerPos.y, 130, 85);
+image(logosRight,  posterWidth - headerPos.rightX - 130, headerPos.y, 130, 85);
 }
 
 const illuH  = 700 * illustrationScale;
@@ -279,28 +285,28 @@ textAlign(LEFT);
 const maxLines = getMaxLines();
 
 if (layout === 1) {
-  textSize(110);
-  textLeading(positions.leading);
-  fill(palette.block2);
-  text(hashtagText, positions.hashtagX, positions.hashtagY);
-  fill(palette.block3);
-  for (let i = 0; i < Math.min(wrappedMainText.length, maxLines); i++) {
-    text(wrappedMainText[i], positions.mainTextX, positions.mainTextY + (i * positions.leading));
-  }
+textSize(110);
+textLeading(positions.leading);
+fill(palette.block2);
+text(hashtagText, positions.hashtagX, positions.hashtagY);
+fill(palette.block3);
+for (let i = 0; i < Math.min(wrappedMainText.length, maxLines); i++) {
+  text(wrappedMainText[i], positions.mainTextX, positions.mainTextY + (i * positions.leading));
+}
 } else if (layout === 2) {
-  textSize(110);
-  textAlign(RIGHT);
-  textLeading(positions.leading);
-  fill(palette.block1);
-  text("REYKJAVIK\nGLOBAL FORUM\n2025", positions.titleX, positions.titleY);
-  textAlign(LEFT);
-  fill(palette.block2);
-  textSize(110);
-  text(hashtagText, positions.hashtagX, positions.hashtagY);
-  fill(palette.block3);
-  for (let i = 0; i < Math.min(wrappedMainText.length, maxLines); i++) {
-    text(wrappedMainText[i], positions.mainTextX, positions.mainTextY + i * positions.leading);
-  }
+textSize(110);
+textAlign(RIGHT);
+textLeading(positions.leading);
+fill(palette.block1);
+text("REYKJAVIK\nGLOBAL FORUM\n2025", positions.titleX, positions.titleY);
+textAlign(LEFT);
+fill(palette.block2);
+textSize(110);
+text(hashtagText, positions.hashtagX, positions.hashtagY);
+fill(palette.block3);
+for (let i = 0; i < Math.min(wrappedMainText.length, maxLines); i++) {
+  text(wrappedMainText[i], positions.mainTextX, positions.mainTextY + i * positions.leading);
+}
 }
 }
 
@@ -313,29 +319,29 @@ let lines = [];
 let currentLine = '';
 
 for (let i = 0; i < words.length; i++) {
-  const word = words[i];
-  const testLine = currentLine ? currentLine + ' ' + word : word;
-  
-  if (testLine.length <= charsPerLine) {
-    currentLine = testLine;
+const word = words[i];
+const testLine = currentLine ? currentLine + ' ' + word : word;
+
+if (testLine.length <= charsPerLine) {
+  currentLine = testLine;
+} else {
+  if (currentLine) {
+    lines.push(currentLine);
+    currentLine = word;
   } else {
-    if (currentLine) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      // Word is longer than charsPerLine, need to break it
-      let remaining = word;
-      while (remaining.length > charsPerLine) {
-        lines.push(remaining.substring(0, charsPerLine));
-        remaining = remaining.substring(charsPerLine);
-      }
-      currentLine = remaining;
+    // Word is longer than charsPerLine, need to break it
+    let remaining = word;
+    while (remaining.length > charsPerLine) {
+      lines.push(remaining.substring(0, charsPerLine));
+      remaining = remaining.substring(charsPerLine);
     }
+    currentLine = remaining;
   }
+}
 }
 
 if (currentLine) {
-  lines.push(currentLine);
+lines.push(currentLine);
 }
 
 return lines.length > 0 ? lines : [''];
@@ -354,14 +360,14 @@ function loadSavedPosters() {
 const s = localStorage.getItem('rgfSavedPosters');
 if (!s) return;
 try {
-  savedPosters = JSON.parse(s);
-  for (let i = savedPosters.length - 1; i >= 0; i--) {
-    displayPosterInWall(savedPosters[i], true);
-  }
+savedPosters = JSON.parse(s);
+for (let i = savedPosters.length - 1; i >= 0; i--) {
+  displayPosterInWall(savedPosters[i], true);
+}
 } catch (e) {
-  console.error('Error loading saved posters:', e);
-  localStorage.removeItem('rgfSavedPosters');
-  savedPosters = [];
+console.error('Error loading saved posters:', e);
+localStorage.removeItem('rgfSavedPosters');
+savedPosters = [];
 }
 }
 
@@ -372,9 +378,9 @@ if (posterData.posterSize === 'Landscape') box.addClass('landscape');
 const img = createImg(posterData.dataUrl, 'Saved poster');
 img.style('width','100%'); img.style('height','auto'); img.style('display','block'); img.parent(box);
 box.mousePressed(()=>{
-  const ix = savedPosters.findIndex(p=>p.dataUrl===posterData.dataUrl);
-  if (ix!==-1){ savedPosters.splice(ix,1); localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters)); }
-  box.remove();
+const ix = savedPosters.findIndex(p=>p.dataUrl===posterData.dataUrl);
+if (ix!==-1){ savedPosters.splice(ix,1); localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters)); }
+box.remove();
 });
 if (addToTop && posterGrid.elt.firstChild) posterGrid.elt.insertBefore(box.elt, posterGrid.elt.firstChild);
 else box.parent(posterGrid);
@@ -383,19 +389,19 @@ else box.parent(posterGrid);
 // ---------- UI ----------
 function createUI(ui) {
 function createLabel(text, parent) {
-  const label = createDiv(text);
-  label.parent(parent);
-  label.addClass('label');
-  label.style('margin-bottom','8px');
-  label.style('font-weight','bold');
-  if (fontsLoaded) label.style('font-family','"RGF Sans", sans-serif');
-  return label;
+const label = createDiv(text);
+label.parent(parent);
+label.addClass('label');
+label.style('margin-bottom','8px');
+label.style('font-weight','bold');
+if (fontsLoaded) label.style('font-family','"RGF Sans", sans-serif');
+return label;
 }
 function createSection() {
-  const section = createDiv();
-  section.addClass('ui-section');
-  section.parent(ui);
-  return section;
+const section = createDiv();
+section.addClass('ui-section');
+section.parent(ui);
+return section;
 }
 
 const posterSection = createSection();
@@ -409,13 +415,14 @@ sizeSelector.parent(posterSection);
 sizeSelector.style('width','100%'); sizeSelector.style('padding','10px');
 sizeSelector.style('margin-bottom','15px'); sizeSelector.style('font-size','16px');
 sizeSelector.changed(()=>{
-  posterSize = sizeSelector.value();
-  if ((posterSize==='Square'||posterSize==='Landscape') && layout===2) {
-    layout = 1; const ls = select('#layoutSelector'); if (ls) ls.value(1);
-  }
-  updateLayoutOptions();
-  calculateScaleRatio(); updateCanvasSize();
-  updateLineLimitDisplay(); updateWrappedText(); validateTextLength();
+posterSize = sizeSelector.value();
+if ((posterSize==='Square'||posterSize==='Landscape') && layout===2) {
+  layout = 1; const ls = select('#layoutSelector'); if (ls) ls.value(1);
+}
+updateLayoutOptions();
+calculateScaleRatio(); updateCanvasSize();
+updateLineLimitDisplay(); updateWrappedText(); validateTextLength();
+populateMainTextDropdown();
 });
 
 createLabel('Style:', posterSection);
@@ -426,27 +433,27 @@ layoutSelector.parent(posterSection);
 layoutSelector.style('width','100%'); layoutSelector.style('padding','10px');
 layoutSelector.style('margin-bottom','15px'); layoutSelector.style('font-size','16px');
 layoutSelector.changed(()=>{
-  if (layoutSelector.value()==2 && (posterSize!=='Story' && posterSize!=='Post')) {
-    layoutSelector.value(1); layout = 1;
-  } else {
-    layout = int(layoutSelector.value());
-  }
-  updateWrappedText(); updateLineLimitDisplay(); validateTextLength();
+if (layoutSelector.value()==2 && (posterSize!=='Story' && posterSize!=='Post')) {
+  layoutSelector.value(1); layout = 1;
+} else {
+  layout = int(layoutSelector.value());
+}
+updateWrappedText(); updateLineLimitDisplay(); validateTextLength();
 });
 
 const colorSection = createSection();
-createLabel('Theme:', colorSection);
+createLabel('Colour:', colorSection);
 const colorContainer = createDiv();
 colorContainer.parent(colorSection);
 colorContainer.style('display','flex'); colorContainer.style('flex-wrap','wrap');
 colorContainer.style('justify-content','center'); colorContainer.style('margin-bottom','15px');
 
 Object.keys(colors).forEach(col=>{
-  const wrap = createDiv().addClass('color-button-container'); wrap.parent(colorContainer);
-  const btn = createButton('').addClass('color-button'); btn.style('background-color', col); btn.parent(wrap);
-  btn.mousePressed(()=>{ bgColor = col; updateSelectedColorIndicator(); });
-  const ind = createImg(F_UI + 'selected01.png','selected').addClass('selected-indicator'); ind.parent(wrap);
-  colorButtons[col] = wrap;
+const wrap = createDiv().addClass('color-button-container'); wrap.parent(colorContainer);
+const btn = createButton('').addClass('color-button'); btn.style('background-color', col); btn.parent(wrap);
+btn.mousePressed(()=>{ bgColor = col; updateSelectedColorIndicator(); });
+const ind = createImg(F_UI + 'selected01.png','selected').addClass('selected-indicator'); ind.parent(wrap);
+colorButtons[col] = wrap;
 });
 updateSelectedColorIndicator();
 
@@ -455,7 +462,6 @@ const textSection = createSection();
 const lineLabel = createLabel(`Main Text:`, textSection);
 lineLabel.id('lineLimit');
 
-//  instead of textarea
 // Create dropdown instead of textarea
 mainTextArea = createSelect().id('mainTextSelector');
 mainTextArea.parent(textSection);
@@ -464,22 +470,44 @@ mainTextArea.style('padding','10px');
 mainTextArea.style('margin-bottom','15px');
 mainTextArea.style('font-size','16px');
 
+// Function to populate dropdown based on poster size
+function populateMainTextDropdown() {
+// Clear existing options
+mainTextArea.elt.innerHTML = '';
+
 // Add default option
 mainTextArea.option('Select a message...', '');
 
-// Add all preset responses
-presetResponses.forEach(response => {
+// Add all responses available for all sizes
+presetResponses.all.forEach(response => {
   mainTextArea.option(response, response);
 });
 
+// Add "Demand equal representation" only for Square and Landscape
+if (posterSize === 'Square' || posterSize === 'Landscape') {
+  presetResponses.squareAndLandscape.forEach(response => {
+    mainTextArea.option(response, response);
+  });
+}
+
+// Add landscape-only responses only for Landscape
+if (posterSize === 'Landscape') {
+  presetResponses.landscapeOnly.forEach(response => {
+    mainTextArea.option(response, response);
+  });
+}
+}
+
+// Initial population
+populateMainTextDropdown();
+
 // Update handler for dropdown
 mainTextArea.changed(() => {
-  const selectedText = mainTextArea.value();
-  mainText = selectedText;
-  updateWrappedText();
+const selectedText = mainTextArea.value();
+mainText = selectedText;
+updateWrappedText();
 });
 
-   //----illustration section--------
 const illuSection = createSection();
 createLabel('Illustration:', illuSection);
 const illuSelector = createSelect(); categories.forEach(n=>illuSelector.option(n));
@@ -505,9 +533,9 @@ sizeHandle.style('position','absolute'); sizeHandle.style('height','30px'); size
 sizeHandle.style('top','0'); sizeHandle.style('left','50%'); sizeHandle.style('transform','translateX(-50%)'); sizeHandle.style('pointer-events','none');
 
 sizeSlider.input(()=>{
-  illustrationScale = sizeSlider.value();
-  const percent = (sizeSlider.value() - 0.5) / 1.5;
-  sizeHandle.style('left', (percent*100) + '%');
+illustrationScale = sizeSlider.value();
+const percent = (sizeSlider.value() - 0.5) / 1.5;
+sizeHandle.style('left', (percent*100) + '%');
 });
 
 createLabel('Position X:', illuSection);
@@ -527,9 +555,9 @@ illuHandle.style('position','absolute'); illuHandle.style('height','30px'); illu
 illuHandle.style('top','0'); illuHandle.style('left','50%'); illuHandle.style('transform','translateX(-50%)'); illuHandle.style('pointer-events','none');
 
 illuSlider.input(()=>{
-  illustrationX = illuSlider.value()*scaleRatio;
-  const percent = (illuSlider.value()+2160)/4320;
-  illuHandle.style('left', (percent*100)+'%');
+illustrationX = illuSlider.value()*scaleRatio;
+const percent = (illuSlider.value()+2160)/4320;
+illuHandle.style('left', (percent*100)+'%');
 });
 
 createLabel('Position Y:', illuSection);
@@ -549,12 +577,10 @@ illuYHandle.style('position','absolute'); illuYHandle.style('height','30px'); il
 illuYHandle.style('top','0'); illuYHandle.style('left','50%'); illuYHandle.style('transform','translateX(-50%)'); illuYHandle.style('pointer-events','none');
 
 illuYSlider.input(()=>{
-  illustrationY = illuYSlider.value()*scaleRatio;
-  const percent = (illuYSlider.value()+1080)/2160;
-  illuYHandle.style('left', (percent*100)+'%');
+illustrationY = illuYSlider.value()*scaleRatio;
+const percent = (illuYSlider.value()+1080)/2160;
+illuYHandle.style('left', (percent*100)+'%');
 });
-
-
 
 const exportSection = createSection();
 const saveBtn = createButton('Save Poster');
@@ -566,15 +592,15 @@ if (fontsLoaded) saveBtn.style('font-family','"RGF Sans", sans-serif');
 saveBtn.mouseOver(()=> saveBtn.style('background-color','#F8ADD2'));
 saveBtn.mouseOut ( ()=> saveBtn.style('background-color','#2737A2'));
 saveBtn.mousePressed(()=>{
-  const filename = `social_post_${posterSize}_${layout}`;
-  saveCanvas(filename, 'jpg');
-  const dataUrl = canvas.elt.toDataURL('image/jpeg');
-  const posterData = { dataUrl, posterSize, layout, timestamp: Date.now() };
-  savedPosters.push(posterData);
-  if (savedPosters.length>20) savedPosters.shift();
-  localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters));
-  displayPosterInWall(posterData, true);
-  document.getElementById('wallContainer').scrollIntoView({behavior:'smooth', block:'start'});
+const filename = `social_post_${posterSize}_${layout}`;
+saveCanvas(filename, 'jpg');
+const dataUrl = canvas.elt.toDataURL('image/jpeg');
+const posterData = { dataUrl, posterSize, layout, timestamp: Date.now() };
+savedPosters.push(posterData);
+if (savedPosters.length>20) savedPosters.shift();
+localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters));
+displayPosterInWall(posterData, true);
+document.getElementById('wallContainer').scrollIntoView({behavior:'smooth', block:'start'});
 });
 
 const clearBtn = createButton('Clear All Saved Posters');
@@ -586,10 +612,10 @@ if (fontsLoaded) clearBtn.style('font-family','"RGF Sans", sans-serif');
 clearBtn.mouseOver(()=> clearBtn.style('background-color','#A4E5D8'));
 clearBtn.mouseOut ( ()=> clearBtn.style('background-color','#db48ff'));
 clearBtn.mousePressed(()=>{
-  savedPosters = [];
-  localStorage.removeItem('rgfSavedPosters');
-  const grid = select('#posterGrid');
-  if (grid) { while (grid.elt.firstChild) grid.elt.removeChild(grid.elt.firstChild); }
+savedPosters = [];
+localStorage.removeItem('rgfSavedPosters');
+const grid = select('#posterGrid');
+if (grid) { while (grid.elt.firstChild) grid.elt.removeChild(grid.elt.firstChild); }
 });
 }
 
@@ -597,9 +623,9 @@ function updateLayoutOptions() {
 const layoutSelector = select('#layoutSelector'); if (!layoutSelector) return;
 const options = layoutSelector.elt.options;
 for (let i=0;i<options.length;i++) {
-  if (options[i].value==='2') {
-    options[i].disabled = !(['Story','Post'].includes(posterSize));
-  }
+if (options[i].value==='2') {
+  options[i].disabled = !(['Story','Post'].includes(posterSize));
+}
 }
 }
 
@@ -654,23 +680,23 @@ if (lineLabel) lineLabel.html(`Main Text:`);
 
 function initializeSliderPositions() {
 setTimeout(()=>{
-  const sizePercent = (1-0.5)/1.5;
-  const sImg = select('#sizeSliderContainer img'); if (sImg) sImg.style('left', (sizePercent*100)+'%');
-  const xPercent = (illustrationX/scaleRatio + 2160)/4320;
-  const xImg = select('#illuSliderContainer img'); if (xImg) xImg.style('left', (xPercent*100)+'%');
-  const yPercent = (illustrationY/scaleRatio + 1080)/2160;
-  const yImg = select('#illuYSliderContainer img'); if (yImg) yImg.style('left', (yPercent*100)+'%');
+const sizePercent = (1-0.5)/1.5;
+const sImg = select('#sizeSliderContainer img'); if (sImg) sImg.style('left', (sizePercent*100)+'%');
+const xPercent = (illustrationX/scaleRatio + 2160)/4320;
+const xImg = select('#illuSliderContainer img'); if (xImg) xImg.style('left', (xPercent*100)+'%');
+const yPercent = (illustrationY/scaleRatio + 1080)/2160;
+const yImg = select('#illuYSliderContainer img'); if (yImg) yImg.style('left', (yPercent*100)+'%');
 },100);
 }
 
 function setupEventListeners() {
 const sizeSelector = select('#posterSizeSelector');
 if (sizeSelector) {
-  sizeSelector.changed(()=>{
-    posterSize = sizeSelector.value();
-    calculateScaleRatio(); updateCanvasSize();
-    updateLineLimitDisplay(); updateWrappedText(); validateTextLength();
-  });
+sizeSelector.changed(()=>{
+  posterSize = sizeSelector.value();
+  calculateScaleRatio(); updateCanvasSize();
+  updateLineLimitDisplay(); updateWrappedText(); validateTextLength();
+});
 }
 window.addEventListener('resize', windowResized);
 }
@@ -737,7 +763,7 @@ function _dwGetDesiredHeight(pad = 0) {
 const editor = document.getElementById('editorContainer');
 
 if (!editor) {
-  return 1700 + pad;
+return 1700 + pad;
 }
 
 const FIXED_HEIGHT = 1700;
