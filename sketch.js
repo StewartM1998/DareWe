@@ -131,8 +131,8 @@ for (let cat of categories){
   }
 }
 
-// FIXED: Added font filename (update this to match your actual font file)
-rgfFont = loadFont(F_FONTS + 'RGFDare.otf', ()=>{ 
+// FIXED: Correct filename to match your actual file
+rgfFont = loadFont(F_FONTS + 'RGFDare-Regular.otf', ()=>{ 
   fontsLoaded=true; 
   console.log('RGFDare font loaded'); 
 }, (err)=>{ 
@@ -140,7 +140,11 @@ rgfFont = loadFont(F_FONTS + 'RGFDare.otf', ()=>{
   fontsLoaded=true; // Continue anyway
 });
 
-helveticaFont = loadFont(F_FONTS + 'HelveticaNeueLTPro-Roman.ttf');
+helveticaFont = loadFont(F_FONTS + 'HelveticaNeueLTPro-Roman.ttf', ()=>{ 
+  console.log('Helvetica font loaded'); 
+}, (err)=>{ 
+  console.error('Error loading Helvetica font:', err); 
+});
 }
 
 // ---------- Setup / UI scaffolding ----------
@@ -707,50 +711,58 @@ window.addEventListener('resize', windowResized);
 function addStyles() {
 const style = document.createElement('style');
 style.textContent = `
-@font-face {
-font-family: 'RGFDare';
-src: url('assets/Fonts/RGFDare.otf') format('opentype');
-}
-body { margin:0; padding:0; overflow-x:hidden; overflow-y:auto; background-color:#f5f5f5; }
-select { 
-padding: 12px 60px 12px 12px !important; 
-appearance: none;
--webkit-appearance: none;
--moz-appearance: none;
-background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-background-repeat: no-repeat;
-background-position: right 15px center;
-background-size: 18px;
-}
-.rgf-font { font-family:'RGFDare', sans-serif !important; }
-.color-button-container { position:relative; display:inline-block; margin:5px; }
-.color-button { width:40px; height:40px; border:none; border-radius:6px; cursor:pointer; }
-.selected-indicator { position:absolute; top:-10px; left:-10px; width:60px; height:60px; pointer-events:none; display:none; transform:scale(0.6); }
-.selected .selected-indicator { display:block; }
-.ui-section { margin-bottom:15px; }
-.poster-thumbnail { width:100%; cursor:pointer; }
-.poster-thumbnail img { width:100%; height:auto; display:block; }
-.poster-thumbnail.landscape { grid-column:1 / -1; }
-#posterGrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); grid-gap:20px; grid-auto-rows:auto; width:100%; padding:20px; }
-#uiPanel { width:350px; min-width:350px; position:sticky; top:20px; align-self:flex-start; }
-#canvasContainer { display:flex; justify-content:center; align-items:center; min-width:0; }
-canvas { max-width:100%; height:auto !important; object-fit:contain; }
-#editorContainer.landscape-mode { max-width:1600px; }
-select option:disabled { color:#999; font-style:italic; }
+  @font-face {
+    font-family: 'RGFDare';
+    src: url('assets/Fonts/RGFDare-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Helvetica Neue LT Pro';
+    src: url('assets/Fonts/HelveticaNeueLTPro-Roman.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  body { margin:0; padding:0; overflow-x:hidden; overflow-y:auto; background-color:#f5f5f5; }
+  select { 
+    padding: 12px 60px 12px 12px !important; 
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 18px;
+  }
+  .rgf-font { font-family:'RGFDare', sans-serif !important; }
+  .color-button-container { position:relative; display:inline-block; margin:5px; }
+  .color-button { width:40px; height:40px; border:none; border-radius:6px; cursor:pointer; }
+  .selected-indicator { position:absolute; top:-10px; left:-10px; width:60px; height:60px; pointer-events:none; display:none; transform:scale(0.6); }
+  .selected .selected-indicator { display:block; }
+  .ui-section { margin-bottom:15px; }
+  .poster-thumbnail { width:100%; cursor:pointer; }
+  .poster-thumbnail img { width:100%; height:auto; display:block; }
+  .poster-thumbnail.landscape { grid-column:1 / -1; }
+  #posterGrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); grid-gap:20px; grid-auto-rows:auto; width:100%; padding:20px; }
+  #uiPanel { width:350px; min-width:350px; position:sticky; top:20px; align-self:flex-start; }
+  #canvasContainer { display:flex; justify-content:center; align-items:center; min-width:0; }
+  canvas { max-width:100%; height:auto !important; object-fit:contain; }
+  #editorContainer.landscape-mode { max-width:1600px; }
+  select option:disabled { color:#999; font-style:italic; }
 
-/* Custom scrollbar for poster wall */
-#wallContainer::-webkit-scrollbar { width: 10px; }
-#wallContainer::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
-#wallContainer::-webkit-scrollbar-thumb { background: #2737A2; border-radius: 5px; }
-#wallContainer::-webkit-scrollbar-thumb:hover { background: #db48ff; }
+  /* Custom scrollbar for poster wall */
+  #wallContainer::-webkit-scrollbar { width: 10px; }
+  #wallContainer::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 5px; }
+  #wallContainer::-webkit-scrollbar-thumb { background: #2737A2; border-radius: 5px; }
+  #wallContainer::-webkit-scrollbar-thumb:hover { background: #db48ff; }
 
-@media (max-width:1200px){
-#editorContainer{ flex-direction:column; align-items:center; padding-bottom: 60px; }
-#uiPanel{ width:100%; max-width:600px; margin-bottom:15px; position:static; }
-}
-@media (max-width:768px){
-#posterGrid{ grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); }
-}
+  @media (max-width:1200px){
+    #editorContainer{ flex-direction:column; align-items:center; padding-bottom: 60px; }
+    #uiPanel{ width:100%; max-width:600px; margin-bottom:15px; position:static; }
+  }
+  @media (max-width:768px){
+    #posterGrid{ grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); }
+  }
 `;
 document.head.appendChild(style);
 }
