@@ -35,6 +35,8 @@ const categories = ["Cake", "Eye", "FlowerA", "FlowerB", "FlowerC", "HandA", "Ha
 // ---------- Preset responses for dropdown ----------
 const presetResponses = {
 all: [
+  "Power, together",
+  "Attain & retain power",
   "Lead in the workplace",
   "Do it for the women who could not",
   "Empower the next generation",
@@ -52,7 +54,7 @@ landscapeOnly: [
   "Create communities that drive change",
   "Believe in the power of collective action",
   "Inspire others and help each other grow",
-  "Empower women to attain and retain power",
+  "Empower women to attain & retain power",
   "Turn ideas into actionable plans for change",
 ]
 };
