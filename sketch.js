@@ -131,7 +131,7 @@ for (let i=0;i<6;i++){
 }
 }
 
-rgfFont = loadFont(F_FONTS + '200525_RGF_Sans.otf', ()=>{ fontsLoaded=true; console.log('RGF Sans font loaded'); });
+rgfFont = loadFont(F_FONTS + '', ()=>{ fontsLoaded=true; console.log('RGF Sans font loaded'); });
 helveticaFont = loadFont(F_FONTS + 'HelveticaNeueLTPro-Roman.ttf');
 }
 
@@ -704,7 +704,7 @@ const style = document.createElement('style');
 style.textContent = `
 @font-face {
   font-family: 'RGF Sans';
-  src: url('assets/Fonts/200525_RGF_Sans.otf') format('opentype');
+  src: url('assets/Fonts/') format('opentype');
 }
 body { margin:0; padding:0; overflow-x:hidden; overflow-y:auto; background-color:#f5f5f5; }
 select { 
