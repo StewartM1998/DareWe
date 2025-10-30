@@ -131,7 +131,7 @@ for (let i=0;i<6;i++){
 }
 }
 
-rgfFont = loadFont(F_FONTS + '', ()=>{ fontsLoaded=true; console.log('RGF Sans font loaded'); });
+rgfFont = loadFont(F_FONTS + '', ()=>{ fontsLoaded=true; console.log('RGFDare font loaded'); });
 helveticaFont = loadFont(F_FONTS + 'HelveticaNeueLTPro-Roman.ttf');
 }
 
@@ -392,7 +392,7 @@ label.parent(parent);
 label.addClass('label');
 label.style('margin-bottom','8px');
 label.style('font-weight','bold');
-if (fontsLoaded) label.style('font-family','"RGF Sans", sans-serif');
+if (fontsLoaded) label.style('font-family','"RGFDare", sans-serif');
 return label;
 }
 function createSection() {
@@ -586,7 +586,7 @@ saveBtn.parent(exportSection);
 saveBtn.style('width','100%'); saveBtn.style('background-color','#2737A2'); saveBtn.style('color','white');
 saveBtn.style('padding','15px'); saveBtn.style('border','none'); saveBtn.style('border-radius','4px');
 saveBtn.style('cursor','pointer'); saveBtn.style('font-size','18px'); saveBtn.style('font-weight','bold');
-if (fontsLoaded) saveBtn.style('font-family','"RGF Sans", sans-serif');
+if (fontsLoaded) saveBtn.style('font-family','"RGFDare", sans-serif');
 saveBtn.mouseOver(()=> saveBtn.style('background-color','#F8ADD2'));
 saveBtn.mouseOut ( ()=> saveBtn.style('background-color','#2737A2'));
 saveBtn.mousePressed(()=>{
@@ -606,7 +606,7 @@ clearBtn.parent(exportSection);
 clearBtn.style('width','100%'); clearBtn.style('background-color','#db48ff'); clearBtn.style('color','white');
 clearBtn.style('padding','10px'); clearBtn.style('border','none'); clearBtn.style('border-radius','4px');
 clearBtn.style('cursor','pointer'); clearBtn.style('font-size','16px'); clearBtn.style('margin-top','10px');
-if (fontsLoaded) clearBtn.style('font-family','"RGF Sans", sans-serif');
+if (fontsLoaded) clearBtn.style('font-family','"RGFDare", sans-serif');
 clearBtn.mouseOver(()=> clearBtn.style('background-color','#A4E5D8'));
 clearBtn.mouseOut ( ()=> clearBtn.style('background-color','#db48ff'));
 clearBtn.mousePressed(()=>{
@@ -703,7 +703,7 @@ function addStyles() {
 const style = document.createElement('style');
 style.textContent = `
 @font-face {
-  font-family: 'RGF Sans';
+  font-family: 'RGFDare';
   src: url('assets/Fonts/') format('opentype');
 }
 body { margin:0; padding:0; overflow-x:hidden; overflow-y:auto; background-color:#f5f5f5; }
@@ -717,7 +717,7 @@ select {
   background-position: right 15px center;
   background-size: 18px;
 }
-.rgf-font { font-family:'RGF Sans', sans-serif !important; }
+.rgf-font { font-family:'RGFDare', sans-serif !important; }
 .color-button-container { position:relative; display:inline-block; margin:5px; }
 .color-button { width:40px; height:40px; border:none; border-radius:6px; cursor:pointer; }
 .selected-indicator { position:absolute; top:-10px; left:-10px; width:60px; height:60px; pointer-events:none; display:none; transform:scale(0.6); }
