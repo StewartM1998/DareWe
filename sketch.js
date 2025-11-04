@@ -521,6 +521,7 @@ const illuSection = createSection();
 createLabel('Illustration:', illuSection);
 const illuSelector = createSelect(); categories.forEach(n=>illuSelector.option(n));
 illuSelector.parent(illuSection);
+illuSelector.value(illustrationCategory); // ← ADD THIS LINE
 illuSelector.style('width','100%'); illuSelector.style('padding','10px');
 illuSelector.style('margin-bottom','15px'); illuSelector.style('font-size','16px');
 illuSelector.changed(()=> illustrationCategory = illuSelector.value());
