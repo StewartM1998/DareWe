@@ -11,7 +11,7 @@ let mainText = '';
 let illustrationX = 4;
 let illustrationY = 0;
 let illustrationScale = 1;
-let illustrationCategory = 'Cake';
+let illustrationCategory = 'HandA';
 let illustrationIndex = 0;
 
 let logos = [];
