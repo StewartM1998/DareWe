@@ -154,6 +154,9 @@ let scaleRatio = 0.5;
 let canvasW, canvasH;
 
 function setup() {
+pixelDensity(1);
+frameRate(25);
+noSmooth(); // optional, disables subpixel smoothing
 const main = createDiv().id('mainContainer');
 main.parent('app');
 main.style('width','100%');
