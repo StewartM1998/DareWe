@@ -142,11 +142,7 @@ rgfFont = loadFont(F_FONTS + 'RGFDare-Regular.otf', ()=>{
   fontsLoaded=true; // Continue anyway
 });
 
-helveticaFont = loadFont(F_FONTS + 'HelveticaNeueLTPro-Roman.ttf', ()=>{ 
-  console.log('Helvetica font loaded'); 
-}, (err)=>{ 
-  console.error('Error loading Helvetica font:', err); 
-});
+
 }
 
 // ---------- Setup / UI scaffolding ----------
