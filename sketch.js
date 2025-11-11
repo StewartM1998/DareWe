@@ -261,6 +261,7 @@ try {
  title.style('margin-top','0');
  title.style('margin-bottom','20px');
  title.style('color','#333');
+ title.style('font-family','"RGFDare", sans-serif');
 
  const cc = createDiv().id('canvasContainer');
  cc.parent(editor);
@@ -1064,43 +1065,44 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 }
 
 async function savePosterMobile() {
-try {
-  // Get canvas as blob
-  const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.95);
-  
-  // Convert data URL to blob
-  const response = await fetch(dataUrl);
-  const blob = await response.blob();
-  
-  // Create file from blob
-  const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
-  const file = new File([blob], fileName, { type: 'image/jpeg' });
-  
-  // Check if Web Share API is supported and can share files
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    // Open native share sheet
-    await navigator.share({
-      files: [file],
-      title: 'Dare We Poster',
-      text: '#DAREWE'
-    });
-    
-    console.log('Share successful');
-    
-  } else {
-    // If Web Share API not supported, show message
-    showMobileInstructions('Sharing not supported on this browser. Please use a modern mobile browser like Safari (iOS) or Chrome (Android).');
-  }
-  
-} catch (error) {
-  // User cancelled or error occurred
-  if (error.name === 'AbortError') {
-    console.log('User cancelled share');
-  } else {
-    console.error('Error sharing:', error);
-    showMobileInstructions('Unable to share. Please try using Safari (iOS) or Chrome (Android).');
-  }
-}
+ try {
+   // Get canvas as blob
+   const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.95);
+   
+   // Convert data URL to blob
+   const response = await fetch(dataUrl);
+   const blob = await response.blob();
+   
+   // Create file from blob
+   const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
+   const file = new File([blob], fileName, { type: 'image/jpeg' });
+   
+   // Check if Web Share API is supported and can share files
+   if (navigator.canShare && navigator.canShare({ files: [file] })) {
+     // Open native share sheet ONLY - no download
+     await navigator.share({
+       files: [file],
+       title: 'Dare We Poster',
+       text: '#DAREWE'
+     });
+     
+     console.log('Share successful');
+     
+   } else {
+     // If Web Share API not supported, show message (NO DOWNLOAD)
+     showMobileInstructions('Sharing not supported on this browser. Please use Safari (iOS) or Chrome (Android).');
+   }
+   
+ } catch (error) {
+   // User cancelled or error occurred - NO DOWNLOAD FALLBACK
+   if (error.name === 'AbortError') {
+     console.log('User cancelled share');
+     // Do nothing - user cancelled
+   } else {
+     console.error('Error sharing:', error);
+     showMobileInstructions('Unable to share. Please try using Safari (iOS) or Chrome (Android).');
+   }
+ }
 }
 
 function showMobileConfirmation(message, bgColor) {
@@ -1399,6 +1401,98 @@ illuYSlider.input(()=>{
  const percent = (illuYSlider.value()+1080)/2160;
  illuYHandle.style('left', (percent*100)+'%');
 });
+
+// Desktop Save and Clear buttons (not shown on mobile)
+if (!isMobile) {
+ const exportSection = createSection();
+ const saveBtn = createButton('Save Poster');
+ saveBtn.parent(exportSection);
+ saveBtn.style('width','100%'); 
+ saveBtn.style('background-color','#2737A2'); 
+ saveBtn.style('color','white');
+ saveBtn.style('padding','15px'); 
+ saveBtn.style('border','none'); 
+ saveBtn.style('border-radius','4px');
+ saveBtn.style('cursor','pointer'); 
+ saveBtn.style('font-size','18px'); 
+ saveBtn.style('font-weight','bold');
+ if (fontsLoaded) saveBtn.style('font-family','"RGFDare", sans-serif');
+ saveBtn.mouseOver(()=> saveBtn.style('background-color','#F8ADD2'));
+ saveBtn.mouseOut ( ()=> saveBtn.style('background-color','#2737A2'));
+ saveBtn.mousePressed(()=>{
+   try {
+     const filename = `dare-we-poster-${posterSize}-${layout}`;
+     saveCanvas(filename, 'jpg');
+     
+     const quality = 0.8;
+     const dataUrl = canvas.elt.toDataURL('image/jpeg', quality);
+     
+     const posterData = { 
+       dataUrl, 
+       posterSize, 
+       layout, 
+       timestamp: Date.now() 
+     };
+     
+     savedPosters.push(posterData);
+     
+     // Enforce limit
+     while (savedPosters.length > MAX_SAVED_POSTERS) {
+       savedPosters.shift();
+     }
+     
+     try {
+       localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters));
+     } catch (e) {
+       console.error('LocalStorage error:', e);
+       alert('Storage full! Removing oldest poster...');
+       savedPosters.shift();
+       try {
+         localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters));
+       } catch (e2) {
+         console.error('Still cannot save:', e2);
+         alert('Cannot save poster - storage is full. Please clear some posters.');
+         return;
+       }
+     }
+     
+     displayPosterInWall(posterData, true);
+     
+     const wallElement = document.getElementById('wallContainer');
+     if (wallElement) {
+       wallElement.scrollIntoView({behavior:'smooth', block:'start'});
+     }
+   } catch (error) {
+     console.error('Error saving poster:', error);
+     alert('Failed to save poster. Please try again.');
+   }
+ });
+
+ const clearBtn = createButton('Clear All Saved Posters');
+ clearBtn.parent(exportSection);
+ clearBtn.style('width','100%'); 
+ clearBtn.style('background-color','#db48ff'); 
+ clearBtn.style('color','white');
+ clearBtn.style('padding','10px'); 
+ clearBtn.style('border','none'); 
+ clearBtn.style('border-radius','4px');
+ clearBtn.style('cursor','pointer'); 
+ clearBtn.style('font-size','16px'); 
+ clearBtn.style('margin-top','10px');
+ if (fontsLoaded) clearBtn.style('font-family','"RGFDare", sans-serif');
+ clearBtn.mouseOver(()=> clearBtn.style('background-color','#A4E5D8'));
+ clearBtn.mouseOut ( ()=> clearBtn.style('background-color','#db48ff'));
+ clearBtn.mousePressed(()=>{
+   savedPosters = [];
+   localStorage.removeItem('rgfSavedPosters');
+   const grid = select('#posterGrid');
+   if (grid) { 
+     while (grid.elt.firstChild) {
+       grid.elt.removeChild(grid.elt.firstChild); 
+     }
+   }
+ });
+}
 }
 
 function updateLayoutOptions() {
