@@ -1,9 +1,9 @@
 // -------------------------------------------------------------
-// DARE WE GENERATOR — Mobile-optimized with bottom icon bar
+// DARE WE GENERATOR — Mobile-optimized with width detection
 // -------------------------------------------------------------
 
-// Mobile detection and limits
-let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+// Mobile detection - checks BOTH user agent AND width (for Wix compatibility)
+let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 let loadError = false;
 
 const MAX_SAVED_POSTERS = isMobile ? 5 : 20;
@@ -132,6 +132,7 @@ let wrappedMainText = [];
 // ---------- Preload with error handling ----------
 function preload() {
 try {
+ console.log('PRELOAD STARTING');
  selectedIndicator = loadImage(F_UI + 'selected01.png', 
    () => console.log('Selected indicator loaded'),
    (err) => { console.error('Failed to load selected indicator:', err); loadError = true; }
@@ -153,6 +154,11 @@ try {
    () => console.log('Logo right2 loaded'),
    (err) => { console.error('Failed to load logo-right2:', err); loadError = true; }
  );
+
+ // Re-check mobile status based on window width at preload time
+ const checkWidth = window.innerWidth || document.documentElement.clientWidth || 768;
+ isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || checkWidth < 768;
+ console.log('Preload - isMobile:', isMobile, 'width:', checkWidth);
 
  if (isMobile) {
    illustrationImgs[illustrationCategory] = [];
@@ -188,6 +194,8 @@ try {
    }
  );
 
+ console.log('PRELOAD COMPLETE');
+
 } catch (error) {
  console.error('Preload error:', error);
  loadError = true;
@@ -219,7 +227,15 @@ try {
  pixelDensity(MAX_PIXEL_DENSITY);
  frameRate(30);
  
- console.log('Setup starting, isMobile:', isMobile);
+ // RE-CHECK mobile status based on actual window width (critical for Wix)
+ isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || windowWidth < 768;
+ 
+ console.log('========================================');
+ console.log('SETUP STARTING');
+ console.log('isMobile:', isMobile);
+ console.log('windowWidth:', windowWidth);
+ console.log('windowHeight:', windowHeight);
+ console.log('========================================');
  
  const main = createDiv().id('mainContainer');
  main.parent('app');
@@ -304,20 +320,26 @@ try {
 
  canvas = createCanvas(canvasW, canvasH);
  canvas.parent(cc);
+ console.log('Canvas created:', canvasW, 'x', canvasH);
 
  textFont(rgfFont);
  textAlign(LEFT, TOP);
  textWrap(WORD);
 
  createUI(ui);
+ console.log('UI created');
  
  addStyles();
+ console.log('Styles added');
  
+ // Create mobile interface
  if (isMobile) {
-   console.log('Creating mobile interface...');
+   console.log('MOBILE MODE - Creating mobile interface...');
    setTimeout(() => {
      createMobileInterface();
    }, 300);
+ } else {
+   console.log('DESKTOP MODE - Using desktop interface');
  }
  
  updateWrappedText();
@@ -337,7 +359,9 @@ try {
 
  _dwPostHeightDebounced(30);
  
- console.log('Setup complete');
+ console.log('========================================');
+ console.log('SETUP COMPLETE');
+ console.log('========================================');
  
 } catch (error) {
  console.error('Setup error:', error);
@@ -565,7 +589,10 @@ if (posterSize === 'Landscape') {
 
 // ---------- MOBILE INTERFACE ----------
 function createMobileInterface() {
- if (!isMobile) return;
+ if (!isMobile) {
+   console.log('Not mobile, skipping mobile interface');
+   return;
+ }
  
  console.log('Creating mobile interface...');
  
@@ -578,6 +605,7 @@ function createMobileInterface() {
  const editor = select('#editorContainer');
  if (editor) {
    editor.style('display', 'none');
+   console.log('Desktop editor hidden');
  }
  
  const mobileLayout = createDiv().id('mobileLayout');
@@ -587,6 +615,8 @@ function createMobileInterface() {
  mobileLayout.style('display', 'flex');
  mobileLayout.style('flex-direction', 'column');
  mobileLayout.style('background', '#f5f5f5');
+ 
+ console.log('Mobile layout created');
  
  const posterArea = createDiv().id('mobilePosterArea');
  posterArea.parent(mobileLayout);
@@ -598,8 +628,11 @@ function createMobileInterface() {
  posterArea.style('min-height', '500px');
  posterArea.style('transition', 'all 0.3s ease');
  
+ console.log('Poster area created');
+ 
  if (canvas) {
    canvas.parent(posterArea);
+   console.log('Canvas moved to poster area');
  }
  
  const panelsContainer = createDiv().id('mobilePanels');
@@ -611,10 +644,14 @@ function createMobileInterface() {
  panelsContainer.style('overflow', 'hidden');
  panelsContainer.style('flex-shrink', '0');
  
+ console.log('Panels container created');
+ 
  createColorPanel(panelsContainer);
  createLayoutPanel(panelsContainer);
  createTextPanel(panelsContainer);
  createIllustrationPanel(panelsContainer);
+ 
+ console.log('Panels created');
  
  const iconBar = createDiv().id('mobileIconBar');
  iconBar.parent(mobileLayout);
@@ -629,11 +666,15 @@ function createMobileInterface() {
  iconBar.style('padding', '10px');
  iconBar.style('flex-shrink', '0');
  
+ console.log('Icon bar created');
+ 
  createIconButton(iconBar, 'Color');
  createIconButton(iconBar, 'Layout');
  createIconButton(iconBar, 'Text');
  createIconButton(iconBar, 'Image');
  createIconButton(iconBar, 'Share');
+ 
+ console.log('5 icon buttons created');
  
  if (wallContainer) {
    wallContainer.style('display', 'none');
@@ -642,6 +683,7 @@ function createMobileInterface() {
  setTimeout(() => {
    calculateScaleRatio();
    updateCanvasSize();
+   console.log('Mobile layout complete');
  }, 100);
 }
 
@@ -680,8 +722,12 @@ function createIconButton(parent, label) {
  const panelId = panelMap[label];
  
  if (label === 'Share') {
-   btn.mousePressed(savePosterMobile);
+   btn.mousePressed(() => {
+     console.log('Share button pressed');
+     savePosterMobile();
+   });
    btn.touchStarted((e) => {
+     console.log('Share button touched');
      e.preventDefault();
      savePosterMobile();
      return false;
@@ -689,8 +735,12 @@ function createIconButton(parent, label) {
    btn.mouseOver(() => btn.style('background', 'rgba(255, 255, 255, 0.1)'));
    btn.mouseOut(() => btn.style('background', 'transparent'));
  } else if (panelId) {
-   btn.mousePressed(() => toggleMobilePanel(panelId, btn));
+   btn.mousePressed(() => {
+     console.log('Button pressed:', label);
+     toggleMobilePanel(panelId, btn);
+   });
    btn.touchStarted((e) => {
+     console.log('Button touched:', label);
      e.preventDefault();
      toggleMobilePanel(panelId, btn);
      return false;
@@ -703,7 +753,12 @@ function toggleMobilePanel(panelId, button) {
  const panelsContainer = select('#mobilePanels');
  const panel = select(`#${panelId}`);
  
- if (!panelsContainer || !panel) return;
+ if (!panelsContainer || !panel) {
+   console.error('Panel not found:', panelId);
+   return;
+ }
+ 
+ console.log('Toggling panel:', panelId);
  
  selectAll('.mobile-icon-button').forEach(btn => {
    btn.style('background', 'transparent');
@@ -714,12 +769,14 @@ function toggleMobilePanel(panelId, button) {
  if (activeMobilePanel === panelId) {
    panelsContainer.style('max-height', '0');
    activeMobilePanel = null;
+   console.log('Panel closed');
  } else {
    selectAll('.mobile-panel').forEach(p => p.style('display', 'none'));
    panel.style('display', 'block');
    panelsContainer.style('max-height', '300px');
    activeMobilePanel = panelId;
    button.style('background', '#db48ff');
+   console.log('Panel opened');
  }
  
  setTimeout(() => {
@@ -989,7 +1046,10 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 }
 
 async function savePosterMobile() {
- if (isSharing) return;
+ if (isSharing) {
+   console.log('Share already in progress');
+   return;
+ }
  
  isSharing = true;
  console.log('Starting share...');
@@ -1003,6 +1063,7 @@ async function savePosterMobile() {
    const fullWidth = posterSizes[posterSize].width;
    const fullHeight = posterSizes[posterSize].height;
    
+   console.log('Resizing to full resolution:', fullWidth, 'x', fullHeight);
    resizeCanvas(fullWidth, fullHeight);
    redraw();
    
@@ -1423,9 +1484,21 @@ if (typeof resizeCanvas === 'function') resizeCanvas(canvasW, canvasH);
 adjustContainerForPosterSize();
 }
 
-function windowResized() { 
-calculateScaleRatio(); 
-updateCanvasSize(); 
+function windowResized() {
+ // Re-check if mobile based on new width
+ const wasMobile = isMobile;
+ isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || windowWidth < 768;
+ 
+ console.log('Window resized - isMobile:', isMobile, 'width:', windowWidth);
+ 
+ // If mobile state changed, need to rebuild interface
+ if (wasMobile !== isMobile) {
+   console.log('Mobile state changed, reloading...');
+   window.location.reload();
+ }
+ 
+ calculateScaleRatio(); 
+ updateCanvasSize(); 
 }
 
 function adjustContainerForPosterSize() {
