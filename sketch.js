@@ -1063,32 +1063,120 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
  slider.input(() => callback(slider.value()));
 }
 
-function savePosterMobile() {
- try {
-   const filename = `social_post_${posterSize}_${layout}`;
-   saveCanvas(filename, 'jpg');
-   
-   // Show confirmation
-   const confirmation = createDiv('✓ Saved!');
-   confirmation.style('position', 'fixed');
-   confirmation.style('top', '50%');
-   confirmation.style('left', '50%');
-   confirmation.style('transform', 'translate(-50%, -50%)');
-   confirmation.style('background', '#400d60');
-   confirmation.style('color', 'white');
-   confirmation.style('padding', '20px 40px');
-   confirmation.style('border-radius', '8px');
-   confirmation.style('font-size', '18px');
-   confirmation.style('font-weight', 'bold');
-   confirmation.style('font-family', '"RGFDare", sans-serif');
-   confirmation.style('z-index', '10000');
-   confirmation.parent('body');
-   
-   setTimeout(() => confirmation.remove(), 2000);
- } catch (error) {
-   console.error('Error saving:', error);
-   alert('Failed to save poster');
- }
+async function savePosterMobile() {
+try {
+  // Get canvas as blob
+  const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.95);
+  
+  // Convert data URL to blob
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  
+  // Create file from blob
+  const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
+  const file = new File([blob], fileName, { type: 'image/jpeg' });
+  
+  // Check if Web Share API is supported and can share files
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    // Use native share sheet (iOS & Android)
+    await navigator.share({
+      files: [file],
+      title: 'Dare We Poster',
+      text: 'Check out my Dare We poster!'
+    });
+    
+    // Show success message
+    showMobileConfirmation('✓ Share Complete!', '#400d60');
+    
+  } else {
+    // Fallback: Traditional download
+    saveCanvas(canvas, fileName.replace('.jpg', ''), 'jpg');
+    
+    // Show instructions based on platform
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (isIOS) {
+      showMobileInstructions('Image downloaded! Tap the image, then press and hold to "Save to Photos".');
+    } else {
+      showMobileInstructions('Image saved to Downloads! You can move it to your Gallery from there.');
+    }
+  }
+  
+} catch (error) {
+  // User cancelled or error occurred
+  if (error.name === 'AbortError') {
+    console.log('User cancelled share');
+  } else {
+    console.error('Error saving:', error);
+    
+    // Fallback to regular download
+    const filename = `dare-we-poster-${posterSize}-${Date.now()}`;
+    saveCanvas(canvas, filename, 'jpg');
+    showMobileConfirmation('✓ Downloaded!', '#400d60');
+  }
+}
+}
+
+function showMobileConfirmation(message, bgColor) {
+const confirmation = createDiv(message);
+confirmation.style('position', 'fixed');
+confirmation.style('top', '50%');
+confirmation.style('left', '50%');
+confirmation.style('transform', 'translate(-50%, -50%)');
+confirmation.style('background', bgColor);
+confirmation.style('color', 'white');
+confirmation.style('padding', '20px 40px');
+confirmation.style('border-radius', '12px');
+confirmation.style('font-size', '18px');
+confirmation.style('font-weight', 'bold');
+confirmation.style('font-family', '"RGFDare", sans-serif');
+confirmation.style('z-index', '10000');
+confirmation.style('box-shadow', '0 4px 20px rgba(0,0,0,0.3)');
+confirmation.style('text-align', 'center');
+confirmation.parent('body');
+
+setTimeout(() => confirmation.remove(), 2000);
+}
+
+function showMobileInstructions(message) {
+const instructions = createDiv(message);
+instructions.style('position', 'fixed');
+instructions.style('bottom', '90px'); // Above bottom bar
+instructions.style('left', '10px');
+instructions.style('right', '10px');
+instructions.style('background', '#400d60');
+instructions.style('color', 'white');
+instructions.style('padding', '15px 20px');
+instructions.style('border-radius', '12px');
+instructions.style('font-size', '14px');
+instructions.style('font-family', '"RGFDare", sans-serif');
+instructions.style('z-index', '10000');
+instructions.style('box-shadow', '0 4px 20px rgba(0,0,0,0.3)');
+instructions.style('text-align', 'center');
+instructions.style('line-height', '1.4');
+instructions.parent('body');
+
+// Add close button
+const closeBtn = createDiv('×');
+closeBtn.parent(instructions);
+closeBtn.style('position', 'absolute');
+closeBtn.style('top', '5px');
+closeBtn.style('right', '10px');
+closeBtn.style('font-size', '24px');
+closeBtn.style('cursor', 'pointer');
+closeBtn.style('color', '#db48ff');
+closeBtn.mousePressed(() => instructions.remove());
+closeBtn.touchStarted((e) => {
+  e.preventDefault();
+  instructions.remove();
+  return false;
+});
+
+setTimeout(() => {
+  if (instructions.elt.parentNode) {
+    instructions.remove();
+  }
+}, 8000);
 }
 
 // ---------- UI ----------
