@@ -618,14 +618,16 @@ function createMobileInterface() {
  
  console.log('Mobile layout created');
  
- const posterArea = createDiv().id('mobilePosterArea');
- posterArea.parent(mobileLayout);
- posterArea.style('display', 'flex');
- posterArea.style('justify-content', 'center');
- posterArea.style('align-items', 'center');
- posterArea.style('padding', '20px 10px');
- posterArea.style('min-height', '0');
- posterArea.style('transition', 'all 0.3s ease');
+const posterArea = createDiv().id('mobilePosterArea');
+posterArea.parent(mobileLayout);
+posterArea.style('display', 'flex');
+posterArea.style('justify-content', 'center');
+posterArea.style('align-items', 'center');
+posterArea.style('padding', '10px'); // CHANGED: Less padding
+posterArea.style('min-height', '0');
+posterArea.style('max-height', 'calc(100vh - 200px)'); // ADDED: Limit max height
+posterArea.style('overflow', 'hidden'); // ADDED: Hide overflow
+posterArea.style('transition', 'all 0.3s ease');
  
  console.log('Poster area created');
  
@@ -1444,37 +1446,40 @@ updateWrappedText();
 }
 
 function calculateScaleRatio() {
- if (isMobile) {
-   let availableWidth = windowWidth - 20;
-   let availableHeight = windowHeight - 100;
-   
-   if (activeMobilePanel) {
-     availableHeight = windowHeight - 380;
-   }
-   
-   const posterWidth = posterSizes[posterSize].width;
-   const posterHeight = posterSizes[posterSize].height;
-   
-   const widthRatio = availableWidth / posterWidth;
-   const heightRatio = availableHeight / posterHeight;
-   
-   scaleRatio = Math.min(widthRatio, heightRatio, 0.95);
-   scaleRatio = Math.max(scaleRatio, 0.1);
- } else {
-   let availableWidth = windowWidth - 450;
-   if (windowWidth <= 1200) availableWidth = windowWidth - 100;
-   const availableHeight = windowHeight - 150;
+if (isMobile) {
+  let availableWidth = windowWidth - 40; // More padding on mobile
+  let availableHeight = windowHeight - 200; // Account for header + bottom bar + padding
+  
+  if (activeMobilePanel) {
+    availableHeight = windowHeight - 480; // Even less when panel is open
+  }
+  
+  const posterWidth = posterSizes[posterSize].width;
+  const posterHeight = posterSizes[posterSize].height;
+  
+  const widthRatio = availableWidth / posterWidth;
+  const heightRatio = availableHeight / posterHeight;
+  
+  // CHANGED: Much smaller max scale for mobile
+  scaleRatio = Math.min(widthRatio, heightRatio, 0.5); // Reduced from 0.95 to 0.5
+  scaleRatio = Math.max(scaleRatio, 0.1);
+  
+  console.log('Mobile scale:', scaleRatio, 'availableHeight:', availableHeight);
+} else {
+  let availableWidth = windowWidth - 450;
+  if (windowWidth <= 1200) availableWidth = windowWidth - 100;
+  const availableHeight = windowHeight - 150;
 
-   const posterWidth = posterSizes[posterSize].width;
-   const posterHeight = posterSizes[posterSize].height;
+  const posterWidth = posterSizes[posterSize].width;
+  const posterHeight = posterSizes[posterSize].height;
 
-   const widthRatio = availableWidth / posterWidth;
-   const heightRatio = availableHeight / posterHeight;
+  const widthRatio = availableWidth / posterWidth;
+  const heightRatio = availableHeight / posterHeight;
 
-   const maxScale = 0.5;
-   scaleRatio = Math.min(widthRatio, heightRatio, maxScale);
-   scaleRatio = Math.max(scaleRatio, 0.1);
- }
+  const maxScale = 0.5;
+  scaleRatio = Math.min(widthRatio, heightRatio, maxScale);
+  scaleRatio = Math.max(scaleRatio, 0.1);
+}
 }
 
 function updateCanvasSize() {
