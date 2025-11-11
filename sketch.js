@@ -1079,24 +1079,17 @@ try {
   
   // Check if Web Share API is supported and can share files
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    // Open native share sheet ONLY - no download
+    // Open native share sheet
     await navigator.share({
       files: [file],
       title: 'Dare We Poster',
       text: '#DAREWE'
     });
-    
-    console.log('Share successful');
   }
   
 } catch (error) {
-  // User cancelled or error occurred - silently fail
-  if (error.name === 'AbortError') {
-    console.log('User cancelled share');
-  } else {
-    console.error('Error sharing:', error);
-  }
-  // No error message shown to user
+  // Silently handle all errors (including user cancellation)
+  console.log('Share action:', error.name || error);
 }
 }
 
