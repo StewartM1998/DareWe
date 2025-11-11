@@ -1,5 +1,5 @@
 // -------------------------------------------------------------
-// DARE WE GENERATOR — Mobile Debug Version
+// DARE WE GENERATOR — Mobile-optimized with bottom icon bar
 // -------------------------------------------------------------
 
 // Mobile detection and limits
@@ -12,26 +12,6 @@ const MAX_PIXEL_DENSITY = isMobile ? 1 : 2;
 // Mobile panel state
 let activeMobilePanel = null;
 let isSharing = false;
-
-// Debug messages
-let debugMessages = [];
-
-function debugLog(message) {
- console.log(message);
- debugMessages.push(new Date().toLocaleTimeString() + ': ' + message);
- if (debugMessages.length > 30) debugMessages.shift();
- 
- // Update debug panel if it exists
- const debugPanel = select('#debugPanel');
- if (debugPanel && isMobile) {
-   let html = '';
-   debugMessages.forEach(msg => {
-     html += '<div style="border-bottom: 1px solid #333; padding: 3px 0; font-size: 10px;">' + msg + '</div>';
-   });
-   debugPanel.html(html);
-   debugPanel.elt.scrollTop = debugPanel.elt.scrollHeight;
- }
-}
 
 // ---------- Global state ----------
 let bgColor = '#400d60';
@@ -152,28 +132,26 @@ let wrappedMainText = [];
 // ---------- Preload with error handling ----------
 function preload() {
 try {
- debugLog('PRELOAD STARTING');
  selectedIndicator = loadImage(F_UI + 'selected01.png', 
-   () => debugLog('Selected indicator loaded'),
-   (err) => { debugLog('Failed to load selected indicator'); loadError = true; }
+   () => console.log('Selected indicator loaded'),
+   (err) => { console.error('Failed to load selected indicator:', err); loadError = true; }
  );
 
- // Load logos with error handling
  for (let i = 0; i < 6; i++) {
    logos[i] = loadImage(F_UI + `logo-new${i}.png`,
-     () => debugLog(`Logo ${i} loaded`),
-     (err) => { debugLog(`Failed to load logo ${i}`); loadError = true; }
+     () => console.log(`Logo ${i} loaded`),
+     (err) => { console.error(`Failed to load logo ${i}:`, err); loadError = true; }
    );
  }
  
  logosRight = loadImage(F_UI + 'logo-right.png',
-   () => debugLog('Logo right loaded'),
-   (err) => { debugLog('Failed to load logo-right'); loadError = true; }
+   () => console.log('Logo right loaded'),
+   (err) => { console.error('Failed to load logo-right:', err); loadError = true; }
  );
  
  logosRight2 = loadImage(F_UI + 'logo-right2.png',
-   () => debugLog('Logo right2 loaded'),
-   (err) => { debugLog('Failed to load logo-right2'); loadError = true; }
+   () => console.log('Logo right2 loaded'),
+   (err) => { console.error('Failed to load logo-right2:', err); loadError = true; }
  );
 
  if (isMobile) {
@@ -181,8 +159,8 @@ try {
    for (let i = 0; i < 6; i++) {
      illustrationImgs[illustrationCategory][i] = loadImage(
        F_ILLU + `${illustrationCategory}/${illustrationCategory}${i}.png`,
-       () => debugLog(`${illustrationCategory} ${i} loaded`),
-       (err) => { debugLog(`Failed to load ${illustrationCategory} ${i}`); loadError = true; }
+       () => console.log(`${illustrationCategory} ${i} loaded`),
+       (err) => { console.error(`Failed to load ${illustrationCategory} ${i}:`, err); loadError = true; }
      );
    }
  } else {
@@ -191,8 +169,8 @@ try {
      for (let i = 0; i < 6; i++) {
        illustrationImgs[cat][i] = loadImage(
          F_ILLU + `${cat}/${cat}${i}.png`,
-         () => debugLog(`${cat} ${i} loaded`),
-         (err) => { debugLog(`Failed to load ${cat} ${i}`); loadError = true; }
+         () => console.log(`${cat} ${i} loaded`),
+         (err) => { console.error(`Failed to load ${cat} ${i}:`, err); loadError = true; }
        );
      }
    }
@@ -201,19 +179,17 @@ try {
  rgfFont = loadFont(F_FONTS + 'RGFDare-Regular.otf', 
    () => { 
      fontsLoaded = true; 
-     debugLog('RGFDare font loaded'); 
+     console.log('RGFDare font loaded'); 
    }, 
    (err) => { 
-     debugLog('Error loading RGFDare font'); 
+     console.error('Error loading RGFDare font:', err); 
      fontsLoaded = true;
      loadError = true;
    }
  );
 
- debugLog('PRELOAD COMPLETE');
-
 } catch (error) {
- debugLog('Preload error: ' + error.message);
+ console.error('Preload error:', error);
  loadError = true;
  fontsLoaded = true;
 }
@@ -223,13 +199,13 @@ function lazyLoadIllustration(cat) {
 if (!isMobile) return;
 if (illustrationImgs[cat] && illustrationImgs[cat].length > 0) return;
 
-debugLog(`Lazy loading ${cat}...`);
+console.log(`Lazy loading ${cat}...`);
 illustrationImgs[cat] = [];
 for (let i = 0; i < 6; i++) {
  illustrationImgs[cat][i] = loadImage(
    F_ILLU + `${cat}/${cat}${i}.png`,
-   () => debugLog(`Lazy loaded ${cat} ${i}`),
-   (err) => debugLog(`Failed to lazy load ${cat} ${i}`)
+   () => console.log(`Lazy loaded ${cat} ${i}`),
+   (err) => console.error(`Failed to lazy load ${cat} ${i}:`, err)
  );
 }
 }
@@ -243,29 +219,7 @@ try {
  pixelDensity(MAX_PIXEL_DENSITY);
  frameRate(30);
  
- debugLog('========================================');
- debugLog('SETUP STARTING');
- debugLog('isMobile: ' + isMobile);
- debugLog('windowWidth: ' + windowWidth);
- debugLog('windowHeight: ' + windowHeight);
- debugLog('========================================');
- 
- // Create debug panel for mobile
- if (isMobile) {
-   const debugPanel = createDiv().id('debugPanel');
-   debugPanel.parent('app');
-   debugPanel.style('background', 'rgba(0,0,0,0.95)');
-   debugPanel.style('color', '#00ff00');
-   debugPanel.style('padding', '10px');
-   debugPanel.style('font-family', 'monospace');
-   debugPanel.style('width', '100%');
-   debugPanel.style('max-height', '150px');
-   debugPanel.style('overflow-y', 'auto');
-   debugPanel.style('border-bottom', '3px solid red');
-   debugPanel.style('z-index', '10000');
-   debugPanel.style('position', 'relative');
-   debugLog('Debug panel created');
- }
+ console.log('Setup starting, isMobile:', isMobile);
  
  const main = createDiv().id('mainContainer');
  main.parent('app');
@@ -273,13 +227,11 @@ try {
  main.style('display','flex');
  main.style('flex-direction','column');
  main.style('align-items','center');
- main.style('background', '#f5f5f5');
 
  if (isMobile) {
    main.style('min-height', '100vh');
  }
 
- // Create editor
  const editor = createDiv().id('editorContainer');
  editor.parent(main);
  editor.style('width','100%');
@@ -324,7 +276,6 @@ try {
  cc.style('align-items','center');
  cc.style('min-width','0');
 
- // Create wall container
  wallContainer = createDiv().id('wallContainer');
  wallContainer.parent(main);
  wallContainer.style('width','100%');
@@ -353,24 +304,20 @@ try {
 
  canvas = createCanvas(canvasW, canvasH);
  canvas.parent(cc);
- debugLog('Canvas created: ' + canvasW + 'x' + canvasH);
 
  textFont(rgfFont);
  textAlign(LEFT, TOP);
  textWrap(WORD);
 
  createUI(ui);
- debugLog('UI created');
  
  addStyles();
- debugLog('Styles added');
  
- // Create mobile interface
  if (isMobile) {
-   debugLog('Calling createMobileInterface...');
+   console.log('Creating mobile interface...');
    setTimeout(() => {
      createMobileInterface();
-   }, 500);
+   }, 300);
  }
  
  updateWrappedText();
@@ -385,19 +332,16 @@ try {
  updateLayoutOptions();
 
  if (loadError) {
-   debugLog('Some resources failed to load');
+   console.warn('Some resources failed to load, but continuing...');
  }
 
  _dwPostHeightDebounced(30);
  
- debugLog('========================================');
- debugLog('SETUP COMPLETE');
- debugLog('Scroll down to see bottom bar!');
- debugLog('========================================');
+ console.log('Setup complete');
  
 } catch (error) {
- debugLog('Setup error: ' + error.message);
- const errorDiv = createDiv('Setup Error: ' + error.message);
+ console.error('Setup error:', error);
+ const errorDiv = createDiv('Failed to initialize. Please refresh the page.');
  errorDiv.style('color', 'red');
  errorDiv.style('padding', '20px');
  errorDiv.style('text-align', 'center');
@@ -488,7 +432,7 @@ try {
  }
  
 } catch (error) {
- debugLog('Draw error: ' + error.message);
+ console.error('Draw error:', error);
  noLoop();
  background(200);
  fill(255, 0, 0);
@@ -552,7 +496,7 @@ try {
    displayPosterInWall(savedPosters[i], true);
  }
 } catch (e) {
- debugLog('Error loading saved posters');
+ console.error('Error loading saved posters:', e);
  localStorage.removeItem('rgfSavedPosters');
  savedPosters = [];
 }
@@ -579,7 +523,7 @@ try {
      try {
        localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters)); 
      } catch (e) {
-       debugLog('LocalStorage error');
+       console.error('LocalStorage error:', e);
      }
    }
    box.remove();
@@ -591,7 +535,7 @@ try {
    box.parent(posterGrid);
  }
 } catch (error) {
- debugLog('Error displaying poster');
+ console.error('Error displaying poster:', error);
 }
 }
 
@@ -623,32 +567,27 @@ if (posterSize === 'Landscape') {
 function createMobileInterface() {
  if (!isMobile) return;
  
- debugLog('>>> createMobileInterface() START <<<');
+ console.log('Creating mobile interface...');
  
  const main = select('#mainContainer');
  if (!main) {
-   debugLog('ERROR: mainContainer not found!');
+   console.error('mainContainer not found!');
    return;
  }
  
  const editor = select('#editorContainer');
  if (editor) {
    editor.style('display', 'none');
-   debugLog('Desktop editor hidden');
  }
  
- // Create mobile layout
  const mobileLayout = createDiv().id('mobileLayout');
  mobileLayout.parent(main);
  mobileLayout.style('width', '100%');
- mobileLayout.style('min-height', 'calc(100vh - 150px)');
+ mobileLayout.style('min-height', '100vh');
  mobileLayout.style('display', 'flex');
  mobileLayout.style('flex-direction', 'column');
  mobileLayout.style('background', '#f5f5f5');
  
- debugLog('Mobile layout created');
- 
- // Poster container
  const posterArea = createDiv().id('mobilePosterArea');
  posterArea.parent(mobileLayout);
  posterArea.style('flex', '1');
@@ -656,17 +595,13 @@ function createMobileInterface() {
  posterArea.style('justify-content', 'center');
  posterArea.style('align-items', 'center');
  posterArea.style('padding', '10px');
- posterArea.style('background', '#f5f5f5');
- posterArea.style('min-height', '400px');
- 
- debugLog('Poster area created');
+ posterArea.style('min-height', '500px');
+ posterArea.style('transition', 'all 0.3s ease');
  
  if (canvas) {
    canvas.parent(posterArea);
-   debugLog('Canvas moved to poster area');
  }
  
- // Panels container
  const panelsContainer = createDiv().id('mobilePanels');
  panelsContainer.parent(mobileLayout);
  panelsContainer.style('background', 'white');
@@ -676,16 +611,11 @@ function createMobileInterface() {
  panelsContainer.style('overflow', 'hidden');
  panelsContainer.style('flex-shrink', '0');
  
- debugLog('Panels container created');
- 
  createColorPanel(panelsContainer);
  createLayoutPanel(panelsContainer);
  createTextPanel(panelsContainer);
  createIllustrationPanel(panelsContainer);
  
- debugLog('Panels created');
- 
- // Bottom icon bar
  const iconBar = createDiv().id('mobileIconBar');
  iconBar.parent(mobileLayout);
  iconBar.style('width', '100%');
@@ -699,15 +629,11 @@ function createMobileInterface() {
  iconBar.style('padding', '10px');
  iconBar.style('flex-shrink', '0');
  
- debugLog('Icon bar created - CHECK IF VISIBLE');
- 
  createIconButton(iconBar, 'Color');
  createIconButton(iconBar, 'Layout');
  createIconButton(iconBar, 'Text');
  createIconButton(iconBar, 'Image');
  createIconButton(iconBar, 'Share');
- 
- debugLog('5 buttons created');
  
  if (wallContainer) {
    wallContainer.style('display', 'none');
@@ -716,17 +642,7 @@ function createMobileInterface() {
  setTimeout(() => {
    calculateScaleRatio();
    updateCanvasSize();
-   debugLog('Layout recalculated');
-   
-   const iconBarCheck = select('#mobileIconBar');
-   if (iconBarCheck) {
-     debugLog('Icon bar in DOM ✓');
-   } else {
-     debugLog('Icon bar NOT in DOM ✗');
-   }
  }, 100);
- 
- debugLog('>>> createMobileInterface() COMPLETE <<<');
 }
 
 function createIconButton(parent, label) {
@@ -764,23 +680,17 @@ function createIconButton(parent, label) {
  const panelId = panelMap[label];
  
  if (label === 'Share') {
-   btn.mousePressed(() => {
-     debugLog('Share button pressed (mouse)');
-     savePosterMobile();
-   });
+   btn.mousePressed(savePosterMobile);
    btn.touchStarted((e) => {
-     debugLog('Share button pressed (touch)');
      e.preventDefault();
      savePosterMobile();
      return false;
    });
+   btn.mouseOver(() => btn.style('background', 'rgba(255, 255, 255, 0.1)'));
+   btn.mouseOut(() => btn.style('background', 'transparent'));
  } else if (panelId) {
-   btn.mousePressed(() => {
-     debugLog('Button pressed: ' + label);
-     toggleMobilePanel(panelId, btn);
-   });
+   btn.mousePressed(() => toggleMobilePanel(panelId, btn));
    btn.touchStarted((e) => {
-     debugLog('Button touched: ' + label);
      e.preventDefault();
      toggleMobilePanel(panelId, btn);
      return false;
@@ -793,12 +703,7 @@ function toggleMobilePanel(panelId, button) {
  const panelsContainer = select('#mobilePanels');
  const panel = select(`#${panelId}`);
  
- if (!panelsContainer || !panel) {
-   debugLog('Panel not found: ' + panelId);
-   return;
- }
- 
- debugLog('Toggling panel: ' + panelId);
+ if (!panelsContainer || !panel) return;
  
  selectAll('.mobile-icon-button').forEach(btn => {
    btn.style('background', 'transparent');
@@ -809,23 +714,18 @@ function toggleMobilePanel(panelId, button) {
  if (activeMobilePanel === panelId) {
    panelsContainer.style('max-height', '0');
    activeMobilePanel = null;
-   debugLog('Panel closed');
  } else {
    selectAll('.mobile-panel').forEach(p => p.style('display', 'none'));
-   
    panel.style('display', 'block');
    panelsContainer.style('max-height', '300px');
    activeMobilePanel = panelId;
-   
    button.style('background', '#db48ff');
-   
-   debugLog('Panel opened: ' + panelId);
  }
  
  setTimeout(() => {
    calculateScaleRatio();
    updateCanvasSize();
- }, 350);
+ }, 320);
 }
 
 function createColorPanel(parent) {
@@ -1089,15 +989,10 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 }
 
 async function savePosterMobile() {
- debugLog('>>> savePosterMobile() CALLED <<<');
- 
- if (isSharing) {
-   debugLog('Share already in progress');
-   return;
- }
+ if (isSharing) return;
  
  isSharing = true;
- debugLog('Starting share process...');
+ console.log('Starting share...');
  
  try {
    const originalScaleRatio = scaleRatio;
@@ -1108,14 +1003,12 @@ async function savePosterMobile() {
    const fullWidth = posterSizes[posterSize].width;
    const fullHeight = posterSizes[posterSize].height;
    
-   debugLog('Resizing to: ' + fullWidth + 'x' + fullHeight);
    resizeCanvas(fullWidth, fullHeight);
    redraw();
    
    await new Promise(resolve => setTimeout(resolve, 150));
    
    const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.98);
-   debugLog('Image captured');
    
    scaleRatio = originalScaleRatio;
    canvasW = originalCanvasW;
@@ -1129,33 +1022,26 @@ async function savePosterMobile() {
    const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
    const file = new File([blob], fileName, { type: 'image/jpeg' });
    
-   debugLog('File: ' + (blob.size / 1024 / 1024).toFixed(2) + 'MB');
+   console.log('File size:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
    
    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-     debugLog('Opening share sheet...');
      await navigator.share({
        files: [file],
        title: 'Dare We Poster',
        text: '#DAREWE'
      });
-     
-     debugLog('Share complete!');
-   } else {
-     debugLog('Web Share API not available');
+     console.log('Share complete');
    }
    
  } catch (error) {
-   debugLog('Share error: ' + (error.name || error.message));
-   
+   console.log('Share cancelled or error:', error.name);
    scaleRatio = 0.5;
    calculateScaleRatio();
    updateCanvasSize();
    redraw();
-   
  } finally {
    setTimeout(() => {
      isSharing = false;
-     debugLog('Share flag reset');
    }, 500);
  }
 }
@@ -1390,6 +1276,7 @@ illuYSlider.input(()=>{
  illuYHandle.style('left', (percent*100)+'%');
 });
 
+// Desktop Save and Clear buttons
 if (!isMobile) {
  const exportSection = createSection();
  const saveBtn = createButton('Save Poster');
@@ -1436,7 +1323,7 @@ if (!isMobile) {
        try {
          localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters));
        } catch (e2) {
-         alert('Cannot save poster - storage is full. Please clear some posters.');
+         alert('Cannot save poster - storage is full.');
          return;
        }
      }
@@ -1782,7 +1669,7 @@ style.textContent = `
    #mobileLayout {
      display: flex !important;
      flex-direction: column !important;
-     min-height: calc(100vh - 150px) !important;
+     min-height: 100vh !important;
      width: 100% !important;
    }
    
@@ -1797,7 +1684,7 @@ style.textContent = `
    
    #mobilePosterArea {
      flex: 1 !important;
-     min-height: 400px !important;
+     min-height: 500px !important;
    }
    
    canvas {
@@ -1843,11 +1730,11 @@ _dwPostHeight(30);
 });
 
 window.addEventListener('error', (event) => {
-debugLog('Global error: ' + event.error);
+console.error('Global error:', event.error);
 event.preventDefault();
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-debugLog('Promise rejection: ' + event.reason);
+console.error('Unhandled promise rejection:', event.reason);
 event.preventDefault();
 });
