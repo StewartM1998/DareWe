@@ -7,7 +7,7 @@ let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.
 let loadError = false;
 
 const MAX_SAVED_POSTERS = isMobile ? 5 : 20;
-const MAX_PIXEL_DENSITY = isMobile ? 1 : 2;
+const MAX_PIXEL_DENSITY = isMobile ? 1.5 : 2;
 
 // Mobile panel state
 let activeMobilePanel = null;
