@@ -11,6 +11,7 @@ const MAX_PIXEL_DENSITY = isMobile ? 1 : 2;
 
 // Mobile panel state
 let activeMobilePanel = null;
+let isSharing = false; // Prevent multiple simultaneous share attempts
 
 // ---------- Global state ----------
 let bgColor = '#400d60';
@@ -1065,31 +1066,83 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 }
 
 async function savePosterMobile() {
-try {
-  // Get canvas as blob
-  const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.95);
-  
-  // Convert data URL to blob
-  const response = await fetch(dataUrl);
-  const blob = await response.blob();
-  
-  // Create file from blob
-  const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
-  const file = new File([blob], fileName, { type: 'image/jpeg' });
-  
-  // Check if Web Share API is supported and can share files
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    // Open native share sheet
-    await navigator.share({
-      files: [file],
-      title: 'Dare We Poster',
-      text: '#DAREWE'
-    });
-  }
-  
-} catch (error) {
-  // Completely silent - no messages
-}
+ // Prevent multiple taps while sharing
+ if (isSharing) {
+   console.log('Share already in progress');
+   return;
+ }
+ 
+ isSharing = true;
+ 
+ try {
+   // Save current state
+   const originalScaleRatio = scaleRatio;
+   const originalCanvasW = canvasW;
+   const originalCanvasH = canvasH;
+   
+   // Set to full resolution (no scaling)
+   scaleRatio = 1;
+   const fullWidth = posterSizes[posterSize].width;
+   const fullHeight = posterSizes[posterSize].height;
+   
+   // Temporarily resize canvas to full resolution
+   resizeCanvas(fullWidth, fullHeight);
+   
+   // Redraw at full resolution (draw() will use scaleRatio = 1)
+   redraw();
+   
+   // Small delay to ensure rendering completes
+   await new Promise(resolve => setTimeout(resolve, 150));
+   
+   // Capture full resolution image with high quality
+   const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.98);
+   
+   // Restore original canvas size
+   scaleRatio = originalScaleRatio;
+   canvasW = originalCanvasW;
+   canvasH = originalCanvasH;
+   resizeCanvas(canvasW, canvasH);
+   redraw();
+   
+   // Convert data URL to blob
+   const response = await fetch(dataUrl);
+   const blob = await response.blob();
+   
+   // Create file from blob
+   const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
+   const file = new File([blob], fileName, { type: 'image/jpeg' });
+   
+   console.log('File size:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
+   console.log('Dimensions:', fullWidth, 'x', fullHeight);
+   
+   // Check if Web Share API is supported and can share files
+   if (navigator.canShare && navigator.canShare({ files: [file] })) {
+     // Open native share sheet
+     await navigator.share({
+       files: [file],
+       title: 'Dare We Poster',
+       text: '#DAREWE'
+     });
+     
+     console.log('Share completed successfully');
+   }
+   
+ } catch (error) {
+   // Silently handle errors
+   console.log('Share action:', error.name || 'cancelled');
+   
+   // Make sure we restore canvas on error
+   scaleRatio = 0.5; // Reset to safe default
+   calculateScaleRatio();
+   updateCanvasSize();
+   redraw();
+   
+ } finally {
+   // Always reset the sharing flag after a delay
+   setTimeout(() => {
+     isSharing = false;
+   }, 500);
+ }
 }
 
 function showMobileConfirmation(message, bgColor) {
@@ -1112,7 +1165,6 @@ function showMobileConfirmation(message, bgColor) {
  
  setTimeout(() => confirmation.remove(), 2000);
 }
-
 
 // ---------- UI ----------
 function createUI(ui) {
