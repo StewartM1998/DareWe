@@ -598,7 +598,7 @@ function createMobileInterface() {
  mobileLayout.style('left', '0');
  mobileLayout.style('background', '#f5f5f5');
  mobileLayout.style('z-index', '1000');
- mobileLayout.style('overflow', 'hidden'); // CRITICAL: Prevent scrolling
+ mobileLayout.style('overflow', 'hidden');
  
  // Poster container (fills available space above bottom bar)
  const posterArea = createDiv().id('mobilePosterArea');
@@ -610,7 +610,7 @@ function createMobileInterface() {
  posterArea.style('overflow', 'hidden');
  posterArea.style('padding', '10px');
  posterArea.style('transition', 'all 0.3s ease');
- posterArea.style('min-height', '0'); // CRITICAL: Allow flex shrinking
+ posterArea.style('min-height', '0');
  
  // Move canvas to mobile poster area
  if (canvas) {
@@ -624,9 +624,9 @@ function createMobileInterface() {
  panelsContainer.style('box-shadow', '0 -2px 10px rgba(0,0,0,0.1)');
  panelsContainer.style('transition', 'all 0.3s ease');
  panelsContainer.style('max-height', '0');
- panelsContainer.style('overflow-y', 'auto'); // Allow scrolling in panel
+ panelsContainer.style('overflow-y', 'auto');
  panelsContainer.style('overflow-x', 'hidden');
- panelsContainer.style('flex-shrink', '0'); // Don't shrink
+ panelsContainer.style('flex-shrink', '0');
  
  // Create all panels (hidden by default)
  createColorPanel(panelsContainer);
@@ -634,28 +634,28 @@ function createMobileInterface() {
  createTextPanel(panelsContainer);
  createIllustrationPanel(panelsContainer);
  
- // Bottom icon bar (ALWAYS VISIBLE - fixed height)
+ // Bottom icon bar (ALWAYS VISIBLE - fixed height) - DARK PURPLE
  const iconBar = createDiv().id('mobileIconBar');
  iconBar.parent(mobileLayout);
  iconBar.style('height', '70px');
- iconBar.style('min-height', '70px'); // CRITICAL: Prevent shrinking
- iconBar.style('flex-shrink', '0'); // CRITICAL: Don't shrink
- iconBar.style('background', 'white');
- iconBar.style('border-top', '3px solid #2737A2');
+ iconBar.style('min-height', '70px');
+ iconBar.style('flex-shrink', '0');
+ iconBar.style('background', '#400d60'); // DARK PURPLE
+ iconBar.style('border-top', '3px solid #db48ff');
  iconBar.style('display', 'flex');
  iconBar.style('justify-content', 'space-around');
  iconBar.style('align-items', 'center');
- iconBar.style('padding', '0 10px');
- iconBar.style('box-shadow', '0 -2px 10px rgba(0,0,0,0.2)'); // More visible shadow
+ iconBar.style('padding', '0 5px');
+ iconBar.style('box-shadow', '0 -2px 10px rgba(0,0,0,0.3)');
  
  console.log('Icon bar created');
  
- // Create icon buttons
- createIconButton(iconBar, '🎨', 'colorPanel', 'Color');
- createIconButton(iconBar, '📏', 'layoutPanel', 'Layout');
- createIconButton(iconBar, '💬', 'textPanel', 'Text');
- createIconButton(iconBar, '🖼️', 'illustrationPanel', 'Image');
- createIconButton(iconBar, '💾', null, 'Save', savePosterMobile);
+ // Create icon buttons (no emojis, just text)
+ createIconButton(iconBar, 'Color');
+ createIconButton(iconBar, 'Layout');
+ createIconButton(iconBar, 'Text');
+ createIconButton(iconBar, 'Image');
+ createIconButton(iconBar, 'Save');
  
  console.log('Icon buttons created');
  
@@ -672,40 +672,56 @@ function createMobileInterface() {
  }, 100);
 }
 
-function createIconButton(parent, emoji, panelId, label, callback) {
+function createIconButton(parent, label) {
  const btn = createDiv().addClass('mobile-icon-button');
  btn.parent(parent);
  btn.style('display', 'flex');
  btn.style('flex-direction', 'column');
  btn.style('align-items', 'center');
+ btn.style('justify-content', 'center');
  btn.style('cursor', 'pointer');
- btn.style('padding', '8px');
+ btn.style('padding', '12px 8px');
  btn.style('border-radius', '8px');
  btn.style('transition', 'all 0.2s');
  btn.style('flex', '1');
  btn.style('max-width', '80px');
- 
- const icon = createDiv(emoji);
- icon.parent(btn);
- icon.style('font-size', '24px');
- icon.style('margin-bottom', '4px');
+ btn.style('min-height', '60px');
  
  const text = createDiv(label);
  text.parent(btn);
- text.style('font-size', '11px');
- text.style('color', '#666');
+ text.style('font-size', '13px');
+ text.style('color', 'white'); // WHITE TEXT
  text.style('font-weight', 'bold');
+ text.style('text-align', 'center');
+ text.style('font-family', '"RGFDare", sans-serif');
+ text.style('text-transform', 'uppercase');
+ text.style('letter-spacing', '0.5px');
  
- if (callback) {
-   // Direct action (like Save)
-   btn.mousePressed(callback);
+ // Map label to panel
+ const panelMap = {
+   'Color': 'colorPanel',
+   'Layout': 'layoutPanel',
+   'Text': 'textPanel',
+   'Image': 'illustrationPanel',
+   'Save': null
+ };
+ 
+ const panelId = panelMap[label];
+ 
+ if (label === 'Save') {
+   // Direct action
+   btn.mousePressed(savePosterMobile);
    btn.touchStarted((e) => {
      e.preventDefault();
-     callback();
+     savePosterMobile();
      return false;
    });
-   btn.mouseOver(() => btn.style('background', '#f0f0f0'));
-   btn.mouseOut(() => btn.style('background', 'transparent'));
+   btn.mouseOver(() => {
+     btn.style('background', 'rgba(255, 255, 255, 0.1)');
+   });
+   btn.mouseOut(() => {
+     btn.style('background', 'transparent');
+   });
  } else if (panelId) {
    // Toggle panel
    btn.mousePressed(() => toggleMobilePanel(panelId, btn));
@@ -733,8 +749,10 @@ function toggleMobilePanel(panelId, button) {
  // Deactivate all buttons
  selectAll('.mobile-icon-button').forEach(btn => {
    btn.style('background', 'transparent');
-   const textEl = btn.elt.querySelector('div:last-child');
-   if (textEl) textEl.style.color = '#666';
+   const textEl = btn.elt.querySelector('div');
+   if (textEl) {
+     textEl.style.color = 'white';
+   }
  });
  
  if (activeMobilePanel === panelId) {
@@ -750,15 +768,17 @@ function toggleMobilePanel(panelId, button) {
    
    // Open selected panel
    panel.style('display', 'block');
-   panelsContainer.style('max-height', '250px'); // Reduced from 300px
+   panelsContainer.style('max-height', '250px');
    posterArea.style('flex', '1');
-   posterArea.style('max-height', 'calc(100vh - 320px)'); // Explicit max height
+   posterArea.style('max-height', 'calc(100vh - 320px)');
    activeMobilePanel = panelId;
    
-   // Highlight active button
-   button.style('background', '#2737A2');
-   const textEl = button.elt.querySelector('div:last-child');
-   if (textEl) textEl.style.color = 'white';
+   // Highlight active button with pink background
+   button.style('background', '#db48ff');
+   const textEl = button.elt.querySelector('div');
+   if (textEl) {
+     textEl.style.color = 'white';
+   }
    
    console.log('Panel opened:', panelId);
  }
@@ -767,7 +787,7 @@ function toggleMobilePanel(panelId, button) {
  setTimeout(() => {
    calculateScaleRatio();
    updateCanvasSize();
- }, 320); // Wait for animation
+ }, 320);
 }
 
 function createColorPanel(parent) {
@@ -781,6 +801,10 @@ function createColorPanel(parent) {
  title.style('font-weight', 'bold');
  title.style('margin-bottom', '15px');
  title.style('font-size', '16px');
+ title.style('font-family', '"RGFDare", sans-serif');
+ title.style('text-transform', 'uppercase');
+ title.style('letter-spacing', '0.5px');
+ title.style('color', '#400d60');
  
  const colorGrid = createDiv();
  colorGrid.parent(panel);
@@ -836,12 +860,19 @@ function createLayoutPanel(parent) {
  title.style('font-weight', 'bold');
  title.style('margin-bottom', '15px');
  title.style('font-size', '16px');
+ title.style('font-family', '"RGFDare", sans-serif');
+ title.style('text-transform', 'uppercase');
+ title.style('letter-spacing', '0.5px');
+ title.style('color', '#400d60');
  
  // Size selector
  const sizeLabel = createDiv('Size:');
  sizeLabel.parent(panel);
  sizeLabel.style('margin-bottom', '8px');
  sizeLabel.style('font-size', '14px');
+ sizeLabel.style('font-family', '"RGFDare", sans-serif');
+ sizeLabel.style('font-weight', 'bold');
+ sizeLabel.style('color', '#400d60');
  
  const sizeSelector = createSelect().id('mobilePosterSize');
  sizeSelector.option('Story (1080×1920)', 'Story');
@@ -853,6 +884,7 @@ function createLayoutPanel(parent) {
  sizeSelector.style('padding', '12px');
  sizeSelector.style('margin-bottom', '15px');
  sizeSelector.style('font-size', '14px');
+ sizeSelector.style('font-family', '"RGFDare", sans-serif');
  sizeSelector.changed(() => {
    posterSize = sizeSelector.value();
    updateLayoutOptions();
@@ -871,6 +903,9 @@ function createLayoutPanel(parent) {
  layoutLabel.parent(panel);
  layoutLabel.style('margin-bottom', '8px');
  layoutLabel.style('font-size', '14px');
+ layoutLabel.style('font-family', '"RGFDare", sans-serif');
+ layoutLabel.style('font-weight', 'bold');
+ layoutLabel.style('color', '#400d60');
  
  const layoutSelector = createSelect().id('mobileLayoutStyle');
  layoutSelector.option('Layout 1', 1);
@@ -879,6 +914,7 @@ function createLayoutPanel(parent) {
  layoutSelector.style('width', '100%');
  layoutSelector.style('padding', '12px');
  layoutSelector.style('font-size', '14px');
+ layoutSelector.style('font-family', '"RGFDare", sans-serif');
  layoutSelector.changed(() => {
    layout = int(layoutSelector.value());
    updateWrappedText();
@@ -902,12 +938,17 @@ function createTextPanel(parent) {
  title.style('font-weight', 'bold');
  title.style('margin-bottom', '15px');
  title.style('font-size', '16px');
+ title.style('font-family', '"RGFDare", sans-serif');
+ title.style('text-transform', 'uppercase');
+ title.style('letter-spacing', '0.5px');
+ title.style('color', '#400d60');
  
  const textSelector = createSelect().id('mobileTextSelector');
  textSelector.parent(panel);
  textSelector.style('width', '100%');
  textSelector.style('padding', '12px');
  textSelector.style('font-size', '14px');
+ textSelector.style('font-family', '"RGFDare", sans-serif');
  
  // Populate options
  populateMobileTextDropdown();
@@ -959,12 +1000,19 @@ function createIllustrationPanel(parent) {
  title.style('font-weight', 'bold');
  title.style('margin-bottom', '15px');
  title.style('font-size', '16px');
+ title.style('font-family', '"RGFDare", sans-serif');
+ title.style('text-transform', 'uppercase');
+ title.style('letter-spacing', '0.5px');
+ title.style('color', '#400d60');
  
  // Category selector
  const catLabel = createDiv('Category:');
  catLabel.parent(panel);
  catLabel.style('margin-bottom', '8px');
  catLabel.style('font-size', '14px');
+ catLabel.style('font-family', '"RGFDare", sans-serif');
+ catLabel.style('font-weight', 'bold');
+ catLabel.style('color', '#400d60');
  
  const illuSelector = createSelect().id('mobileIlluCategory');
  categories.forEach(n => illuSelector.option(n));
@@ -974,6 +1022,7 @@ function createIllustrationPanel(parent) {
  illuSelector.style('padding', '12px');
  illuSelector.style('margin-bottom', '15px');
  illuSelector.style('font-size', '14px');
+ illuSelector.style('font-family', '"RGFDare", sans-serif');
  illuSelector.changed(() => {
    illustrationCategory = illuSelector.value();
    if (isMobile) {
@@ -1004,6 +1053,9 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
  labelDiv.parent(container);
  labelDiv.style('margin-bottom', '8px');
  labelDiv.style('font-size', '14px');
+ labelDiv.style('font-family', '"RGFDare", sans-serif');
+ labelDiv.style('font-weight', 'bold');
+ labelDiv.style('color', '#400d60');
  
  const slider = createSlider(min, max, defaultVal, step);
  slider.parent(container);
@@ -1022,12 +1074,13 @@ function savePosterMobile() {
    confirmation.style('top', '50%');
    confirmation.style('left', '50%');
    confirmation.style('transform', 'translate(-50%, -50%)');
-   confirmation.style('background', '#2737A2');
+   confirmation.style('background', '#400d60');
    confirmation.style('color', 'white');
    confirmation.style('padding', '20px 40px');
    confirmation.style('border-radius', '8px');
    confirmation.style('font-size', '18px');
    confirmation.style('font-weight', 'bold');
+   confirmation.style('font-family', '"RGFDare", sans-serif');
    confirmation.style('z-index', '10000');
    confirmation.parent('body');
    
@@ -1535,6 +1588,7 @@ style.textContent = `
    background-repeat: no-repeat;
    background-position: right 15px center;
    background-size: 18px;
+   font-family: 'RGFDare', sans-serif !important;
  }
  .rgf-font { 
    font-family:'RGFDare', sans-serif !important; 
@@ -1640,6 +1694,10 @@ style.textContent = `
    -webkit-touch-callout: none;
  }
  
+ .mobile-icon-button div {
+   font-family: 'RGFDare', sans-serif !important;
+ }
+ 
  .mobile-panel {
    animation: slideUp 0.3s ease;
  }
@@ -1714,8 +1772,8 @@ style.textContent = `
    #mobileIconBar {
      position: relative;
      z-index: 100;
-     background: white !important;
-     border-top: 3px solid #2737A2 !important;
+     background: #400d60 !important;
+     border-top: 3px solid #db48ff !important;
      flex-shrink: 0 !important;
      min-height: 70px !important;
      height: 70px !important;
