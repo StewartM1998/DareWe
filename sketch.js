@@ -245,7 +245,7 @@ try {
  main.style('align-items','center');
 
  if (isMobile) {
-   main.style('min-height', '0'); // CHANGED: No large min-height
+   main.style('min-height', '0');
  }
 
  const editor = createDiv().id('editorContainer');
@@ -321,6 +321,13 @@ try {
  canvas = createCanvas(canvasW, canvasH);
  canvas.parent(cc);
  console.log('Canvas created:', canvasW, 'x', canvasH);
+
+ // Improve rendering quality
+ if (canvas && canvas.elt) {
+   const ctx = canvas.elt.getContext('2d');
+   ctx.imageSmoothingEnabled = true;
+   ctx.imageSmoothingQuality = 'high';
+ }
 
  textFont(rgfFont);
  textAlign(LEFT, TOP);
@@ -618,16 +625,16 @@ function createMobileInterface() {
  
  console.log('Mobile layout created');
  
-const posterArea = createDiv().id('mobilePosterArea');
-posterArea.parent(mobileLayout);
-posterArea.style('display', 'flex');
-posterArea.style('justify-content', 'center');
-posterArea.style('align-items', 'center');
-posterArea.style('padding', '10px'); // CHANGED: Less padding
-posterArea.style('min-height', '0');
-posterArea.style('max-height', 'calc(100vh - 200px)'); // ADDED: Limit max height
-posterArea.style('overflow', 'hidden'); // ADDED: Hide overflow
-posterArea.style('transition', 'all 0.3s ease');
+ const posterArea = createDiv().id('mobilePosterArea');
+ posterArea.parent(mobileLayout);
+ posterArea.style('display', 'flex');
+ posterArea.style('justify-content', 'center');
+ posterArea.style('align-items', 'center');
+ posterArea.style('padding', '10px');
+ posterArea.style('min-height', '0');
+ posterArea.style('max-height', 'calc(100vh - 200px)');
+ posterArea.style('overflow', 'hidden');
+ posterArea.style('transition', 'all 0.3s ease');
  
  console.log('Poster area created');
  
@@ -1049,12 +1056,12 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 
 async function savePosterMobile() {
  if (isSharing) {
-   console.log('Share already in progress');
+   console.log('Download already in progress');
    return;
  }
  
  isSharing = true;
- console.log('Starting share...');
+ console.log('Starting download...');
  
  try {
    const originalScaleRatio = scaleRatio;
@@ -1079,25 +1086,28 @@ async function savePosterMobile() {
    resizeCanvas(canvasW, canvasH);
    redraw();
    
-   const response = await fetch(dataUrl);
-   const blob = await response.blob();
+   console.log('Image captured, downloading...');
    
+   // Direct download to files
    const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
-   const file = new File([blob], fileName, { type: 'image/jpeg' });
+   const link = document.createElement('a');
+   link.href = dataUrl;
+   link.download = fileName;
    
-   console.log('File size:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
-   
-   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-     await navigator.share({
-       files: [file],
-       title: 'Dare We Poster',
-       text: '#DAREWE'
-     });
-     console.log('Share complete');
+   // For iOS - open in new tab so user can long-press to save
+   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+   if (isIOS) {
+     link.target = '_blank';
    }
    
+   document.body.appendChild(link);
+   link.click();
+   document.body.removeChild(link);
+   
+   console.log('Download triggered');
+   
  } catch (error) {
-   console.log('Share cancelled or error:', error.name);
+   console.log('Download error:', error.message);
    scaleRatio = 0.5;
    calculateScaleRatio();
    updateCanvasSize();
@@ -1446,40 +1456,39 @@ updateWrappedText();
 }
 
 function calculateScaleRatio() {
-if (isMobile) {
-  let availableWidth = windowWidth - 40; // More padding on mobile
-  let availableHeight = windowHeight - 200; // Account for header + bottom bar + padding
-  
-  if (activeMobilePanel) {
-    availableHeight = windowHeight - 480; // Even less when panel is open
-  }
-  
-  const posterWidth = posterSizes[posterSize].width;
-  const posterHeight = posterSizes[posterSize].height;
-  
-  const widthRatio = availableWidth / posterWidth;
-  const heightRatio = availableHeight / posterHeight;
-  
-  // CHANGED: Much smaller max scale for mobile
-  scaleRatio = Math.min(widthRatio, heightRatio, 0.5); // Reduced from 0.95 to 0.5
-  scaleRatio = Math.max(scaleRatio, 0.1);
-  
-  console.log('Mobile scale:', scaleRatio, 'availableHeight:', availableHeight);
-} else {
-  let availableWidth = windowWidth - 450;
-  if (windowWidth <= 1200) availableWidth = windowWidth - 100;
-  const availableHeight = windowHeight - 150;
+ if (isMobile) {
+   let availableWidth = windowWidth - 40;
+   let availableHeight = windowHeight - 200;
+   
+   if (activeMobilePanel) {
+     availableHeight = windowHeight - 480;
+   }
+   
+   const posterWidth = posterSizes[posterSize].width;
+   const posterHeight = posterSizes[posterSize].height;
+   
+   const widthRatio = availableWidth / posterWidth;
+   const heightRatio = availableHeight / posterHeight;
+   
+   scaleRatio = Math.min(widthRatio, heightRatio, 0.6);
+   scaleRatio = Math.max(scaleRatio, 0.15);
+   
+   console.log('Mobile scale:', scaleRatio, 'availableHeight:', availableHeight);
+ } else {
+   let availableWidth = windowWidth - 450;
+   if (windowWidth <= 1200) availableWidth = windowWidth - 100;
+   const availableHeight = windowHeight - 150;
 
-  const posterWidth = posterSizes[posterSize].width;
-  const posterHeight = posterSizes[posterSize].height;
+   const posterWidth = posterSizes[posterSize].width;
+   const posterHeight = posterSizes[posterSize].height;
 
-  const widthRatio = availableWidth / posterWidth;
-  const heightRatio = availableHeight / posterHeight;
+   const widthRatio = availableWidth / posterWidth;
+   const heightRatio = availableHeight / posterHeight;
 
-  const maxScale = 0.5;
-  scaleRatio = Math.min(widthRatio, heightRatio, maxScale);
-  scaleRatio = Math.max(scaleRatio, 0.1);
-}
+   const maxScale = 0.5;
+   scaleRatio = Math.min(widthRatio, heightRatio, maxScale);
+   scaleRatio = Math.max(scaleRatio, 0.1);
+ }
 }
 
 function updateCanvasSize() {
@@ -1490,13 +1499,11 @@ adjustContainerForPosterSize();
 }
 
 function windowResized() {
- // Re-check if mobile based on new width
  const wasMobile = isMobile;
  isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || windowWidth < 768;
  
  console.log('Window resized - isMobile:', isMobile, 'width:', windowWidth);
  
- // If mobile state changed, need to rebuild interface
  if (wasMobile !== isMobile) {
    console.log('Mobile state changed, reloading...');
    window.location.reload();
@@ -1762,7 +1769,9 @@ style.textContent = `
    
    #mobilePosterArea {
      min-height: 0 !important;
-     padding: 20px 10px !important;
+     padding: 10px !important;
+     max-height: calc(100vh - 200px) !important;
+     overflow: hidden !important;
    }
    
    canvas {
