@@ -1088,8 +1088,7 @@ try {
   }
   
 } catch (error) {
-  // Silently handle all errors (including user cancellation)
-  console.log('Share action:', error.name || error);
+  // Completely silent - no messages
 }
 }
 
@@ -1114,46 +1113,6 @@ function showMobileConfirmation(message, bgColor) {
  setTimeout(() => confirmation.remove(), 2000);
 }
 
-function showMobileInstructions(message) {
- const instructions = createDiv(message);
- instructions.style('position', 'fixed');
- instructions.style('bottom', '90px'); // Above bottom bar
- instructions.style('left', '10px');
- instructions.style('right', '10px');
- instructions.style('background', '#400d60');
- instructions.style('color', 'white');
- instructions.style('padding', '15px 20px');
- instructions.style('border-radius', '12px');
- instructions.style('font-size', '14px');
- instructions.style('font-family', '"RGFDare", sans-serif');
- instructions.style('z-index', '10000');
- instructions.style('box-shadow', '0 4px 20px rgba(0,0,0,0.3)');
- instructions.style('text-align', 'center');
- instructions.style('line-height', '1.4');
- instructions.parent('body');
- 
- // Add close button
- const closeBtn = createDiv('×');
- closeBtn.parent(instructions);
- closeBtn.style('position', 'absolute');
- closeBtn.style('top', '5px');
- closeBtn.style('right', '10px');
- closeBtn.style('font-size', '24px');
- closeBtn.style('cursor', 'pointer');
- closeBtn.style('color', '#db48ff');
- closeBtn.mousePressed(() => instructions.remove());
- closeBtn.touchStarted((e) => {
-   e.preventDefault();
-   instructions.remove();
-   return false;
- });
- 
- setTimeout(() => {
-   if (instructions.elt.parentNode) {
-     instructions.remove();
-   }
- }, 8000);
-}
 
 // ---------- UI ----------
 function createUI(ui) {
