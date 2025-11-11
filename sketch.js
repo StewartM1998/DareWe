@@ -1,5 +1,8 @@
+My thought process
+Complete Full Code - With On-Screen Debug Logging
+javascript
 // -------------------------------------------------------------
-// DARE WE GENERATOR — Wix Embed Debug Version
+// DARE WE GENERATOR — Mobile Debug Version
 // -------------------------------------------------------------
 
 // Mobile detection and limits
@@ -12,6 +15,26 @@ const MAX_PIXEL_DENSITY = isMobile ? 1 : 2;
 // Mobile panel state
 let activeMobilePanel = null;
 let isSharing = false;
+
+// Debug messages
+let debugMessages = [];
+
+function debugLog(message) {
+ console.log(message);
+ debugMessages.push(new Date().toLocaleTimeString() + ': ' + message);
+ if (debugMessages.length > 30) debugMessages.shift();
+ 
+ // Update debug panel if it exists
+ const debugPanel = select('#debugPanel');
+ if (debugPanel && isMobile) {
+   let html = '';
+   debugMessages.forEach(msg => {
+     html += '<div style="border-bottom: 1px solid #333; padding: 3px 0; font-size: 10px;">' + msg + '</div>';
+   });
+   debugPanel.html(html);
+   debugPanel.elt.scrollTop = debugPanel.elt.scrollHeight;
+ }
+}
 
 // ---------- Global state ----------
 let bgColor = '#400d60';
@@ -132,89 +155,84 @@ let wrappedMainText = [];
 // ---------- Preload with error handling ----------
 function preload() {
 try {
- console.log('PRELOAD STARTING');
+ debugLog('PRELOAD STARTING');
  selectedIndicator = loadImage(F_UI + 'selected01.png', 
-   () => console.log('Selected indicator loaded'),
-   (err) => { console.error('Failed to load selected indicator:', err); loadError = true; }
+   () => debugLog('Selected indicator loaded'),
+   (err) => { debugLog('Failed to load selected indicator'); loadError = true; }
  );
 
  // Load logos with error handling
  for (let i = 0; i < 6; i++) {
    logos[i] = loadImage(F_UI + `logo-new${i}.png`,
-     () => console.log(`Logo ${i} loaded`),
-     (err) => { console.error(`Failed to load logo ${i}:`, err); loadError = true; }
+     () => debugLog(`Logo ${i} loaded`),
+     (err) => { debugLog(`Failed to load logo ${i}`); loadError = true; }
    );
  }
  
  logosRight = loadImage(F_UI + 'logo-right.png',
-   () => console.log('Logo right loaded'),
-   (err) => { console.error('Failed to load logo-right:', err); loadError = true; }
+   () => debugLog('Logo right loaded'),
+   (err) => { debugLog('Failed to load logo-right'); loadError = true; }
  );
  
  logosRight2 = loadImage(F_UI + 'logo-right2.png',
-   () => console.log('Logo right2 loaded'),
-   (err) => { console.error('Failed to load logo-right2:', err); loadError = true; }
+   () => debugLog('Logo right2 loaded'),
+   (err) => { debugLog('Failed to load logo-right2'); loadError = true; }
  );
 
- // CRITICAL FIX: Only preload current illustration category on mobile
  if (isMobile) {
-   // Just load the default category
    illustrationImgs[illustrationCategory] = [];
    for (let i = 0; i < 6; i++) {
      illustrationImgs[illustrationCategory][i] = loadImage(
        F_ILLU + `${illustrationCategory}/${illustrationCategory}${i}.png`,
-       () => console.log(`${illustrationCategory} ${i} loaded`),
-       (err) => { console.error(`Failed to load ${illustrationCategory} ${i}:`, err); loadError = true; }
+       () => debugLog(`${illustrationCategory} ${i} loaded`),
+       (err) => { debugLog(`Failed to load ${illustrationCategory} ${i}`); loadError = true; }
      );
    }
  } else {
-   // Load all categories on desktop
    for (let cat of categories) {
      illustrationImgs[cat] = [];
      for (let i = 0; i < 6; i++) {
        illustrationImgs[cat][i] = loadImage(
          F_ILLU + `${cat}/${cat}${i}.png`,
-         () => console.log(`${cat} ${i} loaded`),
-         (err) => { console.error(`Failed to load ${cat} ${i}:`, err); loadError = true; }
+         () => debugLog(`${cat} ${i} loaded`),
+         (err) => { debugLog(`Failed to load ${cat} ${i}`); loadError = true; }
        );
      }
    }
  }
 
- // Font loading with better error handling
  rgfFont = loadFont(F_FONTS + 'RGFDare-Regular.otf', 
    () => { 
      fontsLoaded = true; 
-     console.log('RGFDare font loaded'); 
+     debugLog('RGFDare font loaded'); 
    }, 
    (err) => { 
-     console.error('Error loading RGFDare font:', err); 
-     fontsLoaded = true; // Continue anyway with system font
+     debugLog('Error loading RGFDare font'); 
+     fontsLoaded = true;
      loadError = true;
    }
  );
 
- console.log('PRELOAD COMPLETE');
+ debugLog('PRELOAD COMPLETE');
 
 } catch (error) {
- console.error('Preload error:', error);
+ debugLog('Preload error: ' + error.message);
  loadError = true;
- fontsLoaded = true; // Allow setup to continue
+ fontsLoaded = true;
 }
 }
 
-// Add lazy loading function for illustrations on mobile
 function lazyLoadIllustration(cat) {
-if (!isMobile) return; // Only for mobile
-if (illustrationImgs[cat] && illustrationImgs[cat].length > 0) return; // Already loaded
+if (!isMobile) return;
+if (illustrationImgs[cat] && illustrationImgs[cat].length > 0) return;
 
-console.log(`Lazy loading ${cat}...`);
+debugLog(`Lazy loading ${cat}...`);
 illustrationImgs[cat] = [];
 for (let i = 0; i < 6; i++) {
  illustrationImgs[cat][i] = loadImage(
    F_ILLU + `${cat}/${cat}${i}.png`,
-   () => console.log(`Lazy loaded ${cat} ${i}`),
-   (err) => console.error(`Failed to lazy load ${cat} ${i}:`, err)
+   () => debugLog(`Lazy loaded ${cat} ${i}`),
+   (err) => debugLog(`Failed to lazy load ${cat} ${i}`)
  );
 }
 }
@@ -225,15 +243,32 @@ let canvasW, canvasH;
 
 function setup() {
 try {
- console.log('========================================');
- console.log('SETUP STARTING');
- console.log('isMobile:', isMobile);
- console.log('windowWidth:', windowWidth);
- console.log('windowHeight:', windowHeight);
- console.log('========================================');
- 
  pixelDensity(MAX_PIXEL_DENSITY);
  frameRate(30);
+ 
+ debugLog('========================================');
+ debugLog('SETUP STARTING');
+ debugLog('isMobile: ' + isMobile);
+ debugLog('windowWidth: ' + windowWidth);
+ debugLog('windowHeight: ' + windowHeight);
+ debugLog('========================================');
+ 
+ // Create debug panel for mobile
+ if (isMobile) {
+   const debugPanel = createDiv().id('debugPanel');
+   debugPanel.parent('app');
+   debugPanel.style('background', 'rgba(0,0,0,0.95)');
+   debugPanel.style('color', '#00ff00');
+   debugPanel.style('padding', '10px');
+   debugPanel.style('font-family', 'monospace');
+   debugPanel.style('width', '100%');
+   debugPanel.style('max-height', '150px');
+   debugPanel.style('overflow-y', 'auto');
+   debugPanel.style('border-bottom', '3px solid red');
+   debugPanel.style('z-index', '10000');
+   debugPanel.style('position', 'relative');
+   debugLog('Debug panel created');
+ }
  
  const main = createDiv().id('mainContainer');
  main.parent('app');
@@ -241,10 +276,9 @@ try {
  main.style('display','flex');
  main.style('flex-direction','column');
  main.style('align-items','center');
- main.style('background', 'lightblue'); // DEBUG: visible background
+ main.style('background', '#f5f5f5');
 
  if (isMobile) {
-   console.log('MOBILE MODE DETECTED');
    main.style('min-height', '100vh');
  }
 
@@ -322,24 +356,24 @@ try {
 
  canvas = createCanvas(canvasW, canvasH);
  canvas.parent(cc);
- console.log('Canvas created:', canvasW, 'x', canvasH);
+ debugLog('Canvas created: ' + canvasW + 'x' + canvasH);
 
  textFont(rgfFont);
  textAlign(LEFT, TOP);
  textWrap(WORD);
 
  createUI(ui);
+ debugLog('UI created');
  
- // Add styles BEFORE creating mobile interface
  addStyles();
+ debugLog('Styles added');
  
  // Create mobile interface
  if (isMobile) {
-   console.log('CALLING createMobileInterface()');
+   debugLog('Calling createMobileInterface...');
    setTimeout(() => {
      createMobileInterface();
-     console.log('Mobile interface creation complete');
-   }, 500); // Delay to ensure everything is loaded
+   }, 500);
  }
  
  updateWrappedText();
@@ -354,17 +388,18 @@ try {
  updateLayoutOptions();
 
  if (loadError) {
-   console.warn('Some resources failed to load, but continuing...');
+   debugLog('Some resources failed to load');
  }
 
  _dwPostHeightDebounced(30);
  
- console.log('========================================');
- console.log('SETUP COMPLETE');
- console.log('========================================');
+ debugLog('========================================');
+ debugLog('SETUP COMPLETE');
+ debugLog('Scroll down to see bottom bar!');
+ debugLog('========================================');
  
 } catch (error) {
- console.error('Setup error:', error);
+ debugLog('Setup error: ' + error.message);
  const errorDiv = createDiv('Setup Error: ' + error.message);
  errorDiv.style('color', 'red');
  errorDiv.style('padding', '20px');
@@ -393,7 +428,6 @@ try {
  blendMode(BLEND);
  noTint();
  
- // Draw only if images are loaded
  if (logos[styleIdx.logoIdx] && logos[styleIdx.logoIdx].width > 0) {
    image(logos[styleIdx.logoIdx], headerPos.leftX, headerPos.y, 130, 130);
  }
@@ -408,7 +442,6 @@ try {
    }
  }
 
- // Check if illustration exists before drawing
  const illuImg = illustrationImgs[illustrationCategory] && 
                  illustrationImgs[illustrationCategory][styleIdx.illuIdx];
  
@@ -458,7 +491,7 @@ try {
  }
  
 } catch (error) {
- console.error('Draw error:', error);
+ debugLog('Draw error: ' + error.message);
  noLoop();
  background(200);
  fill(255, 0, 0);
@@ -522,7 +555,7 @@ try {
    displayPosterInWall(savedPosters[i], true);
  }
 } catch (e) {
- console.error('Error loading saved posters:', e);
+ debugLog('Error loading saved posters');
  localStorage.removeItem('rgfSavedPosters');
  savedPosters = [];
 }
@@ -549,7 +582,7 @@ try {
      try {
        localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters)); 
      } catch (e) {
-       console.error('LocalStorage error:', e);
+       debugLog('LocalStorage error');
      }
    }
    box.remove();
@@ -561,11 +594,10 @@ try {
    box.parent(posterGrid);
  }
 } catch (error) {
- console.error('Error displaying poster:', error);
+ debugLog('Error displaying poster');
 }
 }
 
-// ---------- populateMainTextDropdown ----------
 function populateMainTextDropdown() {
 const mainTextArea = select('#mainTextSelector');
 if (!mainTextArea) return;
@@ -590,39 +622,34 @@ if (posterSize === 'Landscape') {
 }
 }
 
-// ---------- MOBILE INTERFACE FUNCTIONS ----------
+// ---------- MOBILE INTERFACE ----------
 function createMobileInterface() {
- if (!isMobile) {
-   console.log('Not mobile, skipping mobile interface');
-   return;
- }
+ if (!isMobile) return;
  
- console.log('>>> createMobileInterface() STARTING <<<');
+ debugLog('>>> createMobileInterface() START <<<');
  
  const main = select('#mainContainer');
  if (!main) {
-   console.error('ERROR: mainContainer not found!');
+   debugLog('ERROR: mainContainer not found!');
    return;
  }
- console.log('Main container found');
  
- // Hide desktop editor on mobile
  const editor = select('#editorContainer');
  if (editor) {
    editor.style('display', 'none');
-   console.log('Desktop editor hidden');
+   debugLog('Desktop editor hidden');
  }
  
- // Create mobile layout - SIMPLE VERSION FOR DEBUGGING
+ // Create mobile layout
  const mobileLayout = createDiv().id('mobileLayout');
  mobileLayout.parent(main);
  mobileLayout.style('width', '100%');
- mobileLayout.style('min-height', '100vh');
+ mobileLayout.style('min-height', 'calc(100vh - 150px)');
  mobileLayout.style('display', 'flex');
  mobileLayout.style('flex-direction', 'column');
- mobileLayout.style('background', 'pink'); // DEBUG: Bright color to see it
+ mobileLayout.style('background', '#f5f5f5');
  
- console.log('Mobile layout created');
+ debugLog('Mobile layout created');
  
  // Poster container
  const posterArea = createDiv().id('mobilePosterArea');
@@ -632,20 +659,17 @@ function createMobileInterface() {
  posterArea.style('justify-content', 'center');
  posterArea.style('align-items', 'center');
  posterArea.style('padding', '10px');
- posterArea.style('background', 'lightgreen'); // DEBUG: visible background
+ posterArea.style('background', '#f5f5f5');
  posterArea.style('min-height', '400px');
  
- console.log('Poster area created');
+ debugLog('Poster area created');
  
- // Move canvas to mobile poster area
  if (canvas) {
    canvas.parent(posterArea);
-   console.log('Canvas moved to poster area');
- } else {
-   console.error('ERROR: Canvas not found!');
+   debugLog('Canvas moved to poster area');
  }
  
- // Expandable panels container
+ // Panels container
  const panelsContainer = createDiv().id('mobilePanels');
  panelsContainer.parent(mobileLayout);
  panelsContainer.style('background', 'white');
@@ -653,55 +677,59 @@ function createMobileInterface() {
  panelsContainer.style('transition', 'max-height 0.3s ease');
  panelsContainer.style('max-height', '0');
  panelsContainer.style('overflow', 'hidden');
+ panelsContainer.style('flex-shrink', '0');
  
- console.log('Panels container created');
+ debugLog('Panels container created');
  
- // Create all panels
  createColorPanel(panelsContainer);
  createLayoutPanel(panelsContainer);
  createTextPanel(panelsContainer);
  createIllustrationPanel(panelsContainer);
  
- console.log('Panels created');
+ debugLog('Panels created');
  
- // Bottom icon bar - BRIGHT COLOR FOR DEBUGGING
+ // Bottom icon bar
  const iconBar = createDiv().id('mobileIconBar');
  iconBar.parent(mobileLayout);
+ iconBar.style('width', '100%');
  iconBar.style('height', '80px');
  iconBar.style('min-height', '80px');
  iconBar.style('background', '#400d60');
- iconBar.style('border-top', '5px solid #db48ff'); // Thicker border
+ iconBar.style('border-top', '5px solid #db48ff');
  iconBar.style('display', 'flex');
  iconBar.style('justify-content', 'space-around');
  iconBar.style('align-items', 'center');
  iconBar.style('padding', '10px');
  iconBar.style('flex-shrink', '0');
  
- console.log('Icon bar created');
+ debugLog('Icon bar created - CHECK IF VISIBLE');
  
- // Create icon buttons
  createIconButton(iconBar, 'Color');
  createIconButton(iconBar, 'Layout');
  createIconButton(iconBar, 'Text');
  createIconButton(iconBar, 'Image');
  createIconButton(iconBar, 'Share');
  
- console.log('Icon buttons created');
+ debugLog('5 buttons created');
  
- // Hide wall container on mobile
  if (wallContainer) {
    wallContainer.style('display', 'none');
-   console.log('Wall container hidden');
  }
  
- // Force layout recalculation
  setTimeout(() => {
    calculateScaleRatio();
    updateCanvasSize();
-   console.log('Layout recalculated');
+   debugLog('Layout recalculated');
+   
+   const iconBarCheck = select('#mobileIconBar');
+   if (iconBarCheck) {
+     debugLog('Icon bar in DOM ✓');
+   } else {
+     debugLog('Icon bar NOT in DOM ✗');
+   }
  }, 100);
  
- console.log('>>> createMobileInterface() COMPLETE <<<');
+ debugLog('>>> createMobileInterface() COMPLETE <<<');
 }
 
 function createIconButton(parent, label) {
@@ -717,7 +745,6 @@ function createIconButton(parent, label) {
  btn.style('transition', 'all 0.2s');
  btn.style('flex', '1');
  btn.style('min-height', '60px');
- btn.style('background', 'rgba(255,255,255,0.05)'); // DEBUG: slight background
  
  const text = createDiv(label);
  text.parent(btn);
@@ -741,74 +768,63 @@ function createIconButton(parent, label) {
  
  if (label === 'Share') {
    btn.mousePressed(() => {
-     console.log('Share button pressed (mouse)');
+     debugLog('Share button pressed (mouse)');
      savePosterMobile();
    });
    btn.touchStarted((e) => {
-     console.log('Share button pressed (touch)');
+     debugLog('Share button pressed (touch)');
      e.preventDefault();
      savePosterMobile();
      return false;
    });
  } else if (panelId) {
    btn.mousePressed(() => {
-     console.log('Button pressed:', label);
+     debugLog('Button pressed: ' + label);
      toggleMobilePanel(panelId, btn);
    });
    btn.touchStarted((e) => {
-     console.log('Button touched:', label);
+     debugLog('Button touched: ' + label);
      e.preventDefault();
      toggleMobilePanel(panelId, btn);
      return false;
    });
    btn.attribute('data-panel', panelId);
  }
- 
- console.log('Button created:', label);
 }
 
 function toggleMobilePanel(panelId, button) {
  const panelsContainer = select('#mobilePanels');
  const panel = select(`#${panelId}`);
- const posterArea = select('#mobilePosterArea');
  
  if (!panelsContainer || !panel) {
-   console.error('Panel not found:', panelId);
+   debugLog('Panel not found: ' + panelId);
    return;
  }
  
- console.log('Toggling panel:', panelId);
+ debugLog('Toggling panel: ' + panelId);
  
- // Deactivate all buttons
  selectAll('.mobile-icon-button').forEach(btn => {
-   btn.style('background', 'rgba(255,255,255,0.05)');
+   btn.style('background', 'transparent');
    const textEl = btn.elt.querySelector('div');
-   if (textEl) {
-     textEl.style.color = 'white';
-   }
+   if (textEl) textEl.style.color = 'white';
  });
  
  if (activeMobilePanel === panelId) {
-   // Close current panel
    panelsContainer.style('max-height', '0');
    activeMobilePanel = null;
-   console.log('Panel closed');
+   debugLog('Panel closed');
  } else {
-   // Close all panels
    selectAll('.mobile-panel').forEach(p => p.style('display', 'none'));
    
-   // Open selected panel
    panel.style('display', 'block');
    panelsContainer.style('max-height', '300px');
    activeMobilePanel = panelId;
    
-   // Highlight active button
    button.style('background', '#db48ff');
    
-   console.log('Panel opened:', panelId);
+   debugLog('Panel opened: ' + panelId);
  }
  
- // Recalculate canvas size
  setTimeout(() => {
    calculateScaleRatio();
    updateCanvasSize();
@@ -828,7 +844,6 @@ function createColorPanel(parent) {
  title.style('font-size', '16px');
  title.style('font-family', '"RGFDare", sans-serif');
  title.style('text-transform', 'uppercase');
- title.style('letter-spacing', '0.5px');
  title.style('color', '#400d60');
  
  const colorGrid = createDiv();
@@ -886,7 +901,6 @@ function createLayoutPanel(parent) {
  title.style('font-size', '16px');
  title.style('font-family', '"RGFDare", sans-serif');
  title.style('text-transform', 'uppercase');
- title.style('letter-spacing', '0.5px');
  title.style('color', '#400d60');
  
  const sizeLabel = createDiv('Size:');
@@ -960,7 +974,6 @@ function createTextPanel(parent) {
  title.style('font-size', '16px');
  title.style('font-family', '"RGFDare", sans-serif');
  title.style('text-transform', 'uppercase');
- title.style('letter-spacing', '0.5px');
  title.style('color', '#400d60');
  
  const textSelector = createSelect().id('mobileTextSelector');
@@ -1020,7 +1033,6 @@ function createIllustrationPanel(parent) {
  title.style('font-size', '16px');
  title.style('font-family', '"RGFDare", sans-serif');
  title.style('text-transform', 'uppercase');
- title.style('letter-spacing', '0.5px');
  title.style('color', '#400d60');
  
  const catLabel = createDiv('Category:');
@@ -1080,15 +1092,15 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 }
 
 async function savePosterMobile() {
- console.log('>>> savePosterMobile() CALLED <<<');
+ debugLog('>>> savePosterMobile() CALLED <<<');
  
  if (isSharing) {
-   console.log('Share already in progress');
+   debugLog('Share already in progress');
    return;
  }
  
  isSharing = true;
- console.log('Starting share process...');
+ debugLog('Starting share process...');
  
  try {
    const originalScaleRatio = scaleRatio;
@@ -1099,14 +1111,14 @@ async function savePosterMobile() {
    const fullWidth = posterSizes[posterSize].width;
    const fullHeight = posterSizes[posterSize].height;
    
-   console.log('Resizing to full resolution:', fullWidth, 'x', fullHeight);
+   debugLog('Resizing to: ' + fullWidth + 'x' + fullHeight);
    resizeCanvas(fullWidth, fullHeight);
    redraw();
    
    await new Promise(resolve => setTimeout(resolve, 150));
    
    const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.98);
-   console.log('Image captured, data URL length:', dataUrl.length);
+   debugLog('Image captured');
    
    scaleRatio = originalScaleRatio;
    canvasW = originalCanvasW;
@@ -1120,24 +1132,23 @@ async function savePosterMobile() {
    const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
    const file = new File([blob], fileName, { type: 'image/jpeg' });
    
-   console.log('File created:', fileName);
-   console.log('File size:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
+   debugLog('File: ' + (blob.size / 1024 / 1024).toFixed(2) + 'MB');
    
    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-     console.log('Web Share API available, opening share sheet...');
+     debugLog('Opening share sheet...');
      await navigator.share({
        files: [file],
        title: 'Dare We Poster',
        text: '#DAREWE'
      });
      
-     console.log('Share completed successfully');
+     debugLog('Share complete!');
    } else {
-     console.log('Web Share API not available');
+     debugLog('Web Share API not available');
    }
    
  } catch (error) {
-   console.log('Share error or cancelled:', error.name, error.message);
+   debugLog('Share error: ' + (error.name || error.message));
    
    scaleRatio = 0.5;
    calculateScaleRatio();
@@ -1147,7 +1158,7 @@ async function savePosterMobile() {
  } finally {
    setTimeout(() => {
      isSharing = false;
-     console.log('Share flag reset');
+     debugLog('Share flag reset');
    }, 500);
  }
 }
@@ -1382,7 +1393,6 @@ illuYSlider.input(()=>{
  illuYHandle.style('left', (percent*100)+'%');
 });
 
-// Desktop Save and Clear buttons
 if (!isMobile) {
  const exportSection = createSection();
  const saveBtn = createButton('Save Poster');
@@ -1429,7 +1439,6 @@ if (!isMobile) {
        try {
          localStorage.setItem('rgfSavedPosters', JSON.stringify(savedPosters));
        } catch (e2) {
-         console.error('Still cannot save:', e2);
          alert('Cannot save poster - storage is full. Please clear some posters.');
          return;
        }
@@ -1506,8 +1515,6 @@ function calculateScaleRatio() {
    
    scaleRatio = Math.min(widthRatio, heightRatio, 0.95);
    scaleRatio = Math.max(scaleRatio, 0.1);
-   
-   console.log('Mobile scale:', scaleRatio);
  } else {
    let availableWidth = windowWidth - 450;
    if (windowWidth <= 1200) availableWidth = windowWidth - 100;
@@ -1726,9 +1733,6 @@ style.textContent = `
    background: #2737A2; 
    border-radius: 5px; 
  }
- #wallContainer::-webkit-scrollbar-thumb:hover { 
-   background: #db48ff; 
- }
 
  .mobile-icon-button {
    user-select: none;
@@ -1781,7 +1785,7 @@ style.textContent = `
    #mobileLayout {
      display: flex !important;
      flex-direction: column !important;
-     min-height: 100vh !important;
+     min-height: calc(100vh - 150px) !important;
      width: 100% !important;
    }
    
@@ -1791,6 +1795,7 @@ style.textContent = `
      min-height: 80px !important;
      height: 80px !important;
      display: flex !important;
+     width: 100% !important;
    }
    
    #mobilePosterArea {
@@ -1818,7 +1823,7 @@ if (layoutSelector) layoutSelector.value(layout);
 
 function _dwGetDesiredHeight(pad = 0) {
  if (isMobile) {
-   return 1000 + pad; // Fixed height for mobile
+   return 1000 + pad;
  }
  return 1700 + pad;
 }
@@ -1829,7 +1834,6 @@ function _dwPostHeight(pad = 0) {
 if (window.parent === window) return;
 const h = _dwGetDesiredHeight(pad);
 window.parent.postMessage({ type: 'DW_HEIGHT', height: h }, '*');
-console.log('Posting height to Wix:', h);
 }
 
 function _dwPostHeightDebounced(pad = 0) {
@@ -1838,16 +1842,22 @@ __dw_resizeTO = setTimeout(() => _dwPostHeight(pad), 60);
 }
 
 window.addEventListener('load', () => {
-console.log('Window loaded, sending height to Wix');
 _dwPostHeight(30);
 });
 
 window.addEventListener('error', (event) => {
-console.error('Global error:', event.error);
+debugLog('Global error: ' + event.error);
 event.preventDefault();
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-console.error('Unhandled promise rejection:', event.reason);
+debugLog('Promise rejection: ' + event.reason);
 event.preventDefault();
 });
+
+What You'll See on iPhone:
+Black debug panel at top with green text showing all activity
+Poster in middle
+Dark purple bottom bar with 5 white text buttons
+
+The debug panel will say "Scroll down to see bottom bar!" - so scroll down and tell me what the debug messages say! The bottom bar should be there. 📱🔍
