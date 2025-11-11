@@ -1,5 +1,5 @@
 // -------------------------------------------------------------
-// DARE WE GENERATOR — Mobile-optimized with bottom icon bar
+// DARE WE GENERATOR — Wix Embed Debug Version
 // -------------------------------------------------------------
 
 // Mobile detection and limits
@@ -11,7 +11,7 @@ const MAX_PIXEL_DENSITY = isMobile ? 1 : 2;
 
 // Mobile panel state
 let activeMobilePanel = null;
-let isSharing = false; // Prevent multiple simultaneous share attempts
+let isSharing = false;
 
 // ---------- Global state ----------
 let bgColor = '#400d60';
@@ -132,6 +132,7 @@ let wrappedMainText = [];
 // ---------- Preload with error handling ----------
 function preload() {
 try {
+ console.log('PRELOAD STARTING');
  selectedIndicator = loadImage(F_UI + 'selected01.png', 
    () => console.log('Selected indicator loaded'),
    (err) => { console.error('Failed to load selected indicator:', err); loadError = true; }
@@ -193,6 +194,8 @@ try {
    }
  );
 
+ console.log('PRELOAD COMPLETE');
+
 } catch (error) {
  console.error('Preload error:', error);
  loadError = true;
@@ -222,11 +225,15 @@ let canvasW, canvasH;
 
 function setup() {
 try {
+ console.log('========================================');
+ console.log('SETUP STARTING');
+ console.log('isMobile:', isMobile);
+ console.log('windowWidth:', windowWidth);
+ console.log('windowHeight:', windowHeight);
+ console.log('========================================');
+ 
  pixelDensity(MAX_PIXEL_DENSITY);
  frameRate(30);
- 
- console.log('Setup starting, isMobile:', isMobile);
- console.log('Window size:', windowWidth, 'x', windowHeight);
  
  const main = createDiv().id('mainContainer');
  main.parent('app');
@@ -234,8 +241,14 @@ try {
  main.style('display','flex');
  main.style('flex-direction','column');
  main.style('align-items','center');
+ main.style('background', 'lightblue'); // DEBUG: visible background
 
- // Create editor FIRST (appears at top)
+ if (isMobile) {
+   console.log('MOBILE MODE DETECTED');
+   main.style('min-height', '100vh');
+ }
+
+ // Create editor
  const editor = createDiv().id('editorContainer');
  editor.parent(main);
  editor.style('width','100%');
@@ -254,9 +267,12 @@ try {
  ui.style('box-shadow','0 2px 10px rgba(0,0,0,0.1)');
  ui.style('border-radius','8px');
  ui.style('overflow-y','auto');
- ui.style('position','sticky');
- ui.style('top','15px');
- ui.style('align-self','flex-start');
+ 
+ if (!isMobile) {
+   ui.style('position','sticky');
+   ui.style('top','15px');
+   ui.style('align-self','flex-start');
+ }
 
  const title = createElement('h1','Dare We generator');
  title.parent(ui);
@@ -277,7 +293,7 @@ try {
  cc.style('align-items','center');
  cc.style('min-width','0');
 
- // Create wall container SECOND (appears at bottom)
+ // Create wall container
  wallContainer = createDiv().id('wallContainer');
  wallContainer.parent(main);
  wallContainer.style('width','100%');
@@ -306,6 +322,7 @@ try {
 
  canvas = createCanvas(canvasW, canvasH);
  canvas.parent(cc);
+ console.log('Canvas created:', canvasW, 'x', canvasH);
 
  textFont(rgfFont);
  textAlign(LEFT, TOP);
@@ -318,8 +335,11 @@ try {
  
  // Create mobile interface
  if (isMobile) {
-   console.log('Creating mobile interface...');
-   createMobileInterface();
+   console.log('CALLING createMobileInterface()');
+   setTimeout(() => {
+     createMobileInterface();
+     console.log('Mobile interface creation complete');
+   }, 500); // Delay to ensure everything is loaded
  }
  
  updateWrappedText();
@@ -333,23 +353,23 @@ try {
  enforceLayoutRestrictions();
  updateLayoutOptions();
 
- // Show warning if loading failed
  if (loadError) {
    console.warn('Some resources failed to load, but continuing...');
  }
 
- // Send fixed height to Wix
  _dwPostHeightDebounced(30);
  
- console.log('Setup complete');
+ console.log('========================================');
+ console.log('SETUP COMPLETE');
+ console.log('========================================');
  
 } catch (error) {
  console.error('Setup error:', error);
- // Display error to user
- const errorDiv = createDiv('Failed to initialize. Please refresh the page.');
+ const errorDiv = createDiv('Setup Error: ' + error.message);
  errorDiv.style('color', 'red');
  errorDiv.style('padding', '20px');
  errorDiv.style('text-align', 'center');
+ errorDiv.style('background', 'white');
  errorDiv.parent('app');
 }
 }
@@ -439,10 +459,7 @@ try {
  
 } catch (error) {
  console.error('Draw error:', error);
- // Don't redraw on error to prevent infinite loop
  noLoop();
- 
- // Show error message
  background(200);
  fill(255, 0, 0);
  textSize(20);
@@ -470,7 +487,6 @@ for (let i = 0; i < words.length; i++) {
      lines.push(currentLine);
      currentLine = word;
    } else {
-     // Word is longer than charsPerLine, need to break it
      let remaining = word;
      while (remaining.length > charsPerLine) {
        lines.push(remaining.substring(0, charsPerLine));
@@ -576,80 +592,94 @@ if (posterSize === 'Landscape') {
 
 // ---------- MOBILE INTERFACE FUNCTIONS ----------
 function createMobileInterface() {
- if (!isMobile) return;
+ if (!isMobile) {
+   console.log('Not mobile, skipping mobile interface');
+   return;
+ }
  
- console.log('Creating mobile interface...');
+ console.log('>>> createMobileInterface() STARTING <<<');
  
  const main = select('#mainContainer');
- if (!main) return;
+ if (!main) {
+   console.error('ERROR: mainContainer not found!');
+   return;
+ }
+ console.log('Main container found');
  
  // Hide desktop editor on mobile
  const editor = select('#editorContainer');
  if (editor) {
    editor.style('display', 'none');
+   console.log('Desktop editor hidden');
  }
  
- // Create mobile layout - IFRAME COMPATIBLE
+ // Create mobile layout - SIMPLE VERSION FOR DEBUGGING
  const mobileLayout = createDiv().id('mobileLayout');
  mobileLayout.parent(main);
  mobileLayout.style('width', '100%');
- mobileLayout.style('height', '100vh');
+ mobileLayout.style('min-height', '100vh');
  mobileLayout.style('display', 'flex');
  mobileLayout.style('flex-direction', 'column');
- mobileLayout.style('position', 'relative'); // CHANGED from fixed for iframe
- mobileLayout.style('background', '#f5f5f5');
+ mobileLayout.style('background', 'pink'); // DEBUG: Bright color to see it
  
- // Poster container (fills available space above bottom bar)
+ console.log('Mobile layout created');
+ 
+ // Poster container
  const posterArea = createDiv().id('mobilePosterArea');
  posterArea.parent(mobileLayout);
  posterArea.style('flex', '1');
  posterArea.style('display', 'flex');
  posterArea.style('justify-content', 'center');
  posterArea.style('align-items', 'center');
- posterArea.style('overflow', 'hidden');
  posterArea.style('padding', '10px');
- posterArea.style('transition', 'all 0.3s ease');
- posterArea.style('min-height', '0');
+ posterArea.style('background', 'lightgreen'); // DEBUG: visible background
+ posterArea.style('min-height', '400px');
+ 
+ console.log('Poster area created');
  
  // Move canvas to mobile poster area
  if (canvas) {
    canvas.parent(posterArea);
+   console.log('Canvas moved to poster area');
+ } else {
+   console.error('ERROR: Canvas not found!');
  }
  
- // Expandable panels container (slides up from bottom)
+ // Expandable panels container
  const panelsContainer = createDiv().id('mobilePanels');
  panelsContainer.parent(mobileLayout);
  panelsContainer.style('background', 'white');
  panelsContainer.style('box-shadow', '0 -2px 10px rgba(0,0,0,0.1)');
- panelsContainer.style('transition', 'all 0.3s ease');
+ panelsContainer.style('transition', 'max-height 0.3s ease');
  panelsContainer.style('max-height', '0');
- panelsContainer.style('overflow-y', 'auto');
- panelsContainer.style('overflow-x', 'hidden');
- panelsContainer.style('flex-shrink', '0');
+ panelsContainer.style('overflow', 'hidden');
  
- // Create all panels (hidden by default)
+ console.log('Panels container created');
+ 
+ // Create all panels
  createColorPanel(panelsContainer);
  createLayoutPanel(panelsContainer);
  createTextPanel(panelsContainer);
  createIllustrationPanel(panelsContainer);
  
- // Bottom icon bar (ALWAYS VISIBLE - fixed height) - DARK PURPLE
+ console.log('Panels created');
+ 
+ // Bottom icon bar - BRIGHT COLOR FOR DEBUGGING
  const iconBar = createDiv().id('mobileIconBar');
  iconBar.parent(mobileLayout);
- iconBar.style('height', '70px');
- iconBar.style('min-height', '70px');
- iconBar.style('flex-shrink', '0');
- iconBar.style('background', '#400d60'); // DARK PURPLE
- iconBar.style('border-top', '3px solid #db48ff');
+ iconBar.style('height', '80px');
+ iconBar.style('min-height', '80px');
+ iconBar.style('background', '#400d60');
+ iconBar.style('border-top', '5px solid #db48ff'); // Thicker border
  iconBar.style('display', 'flex');
  iconBar.style('justify-content', 'space-around');
  iconBar.style('align-items', 'center');
- iconBar.style('padding', '0 5px');
- iconBar.style('box-shadow', '0 -2px 10px rgba(0,0,0,0.3)');
+ iconBar.style('padding', '10px');
+ iconBar.style('flex-shrink', '0');
  
  console.log('Icon bar created');
  
- // Create icon buttons (no emojis, just text)
+ // Create icon buttons
  createIconButton(iconBar, 'Color');
  createIconButton(iconBar, 'Layout');
  createIconButton(iconBar, 'Text');
@@ -661,14 +691,17 @@ function createMobileInterface() {
  // Hide wall container on mobile
  if (wallContainer) {
    wallContainer.style('display', 'none');
+   console.log('Wall container hidden');
  }
  
- // Force a layout recalculation
+ // Force layout recalculation
  setTimeout(() => {
    calculateScaleRatio();
    updateCanvasSize();
-   console.log('Mobile layout complete');
+   console.log('Layout recalculated');
  }, 100);
+ 
+ console.log('>>> createMobileInterface() COMPLETE <<<');
 }
 
 function createIconButton(parent, label) {
@@ -683,20 +716,19 @@ function createIconButton(parent, label) {
  btn.style('border-radius', '8px');
  btn.style('transition', 'all 0.2s');
  btn.style('flex', '1');
- btn.style('max-width', '80px');
  btn.style('min-height', '60px');
+ btn.style('background', 'rgba(255,255,255,0.05)'); // DEBUG: slight background
  
  const text = createDiv(label);
  text.parent(btn);
  text.style('font-size', '13px');
- text.style('color', 'white'); // WHITE TEXT
+ text.style('color', 'white');
  text.style('font-weight', 'bold');
  text.style('text-align', 'center');
  text.style('font-family', '"RGFDare", sans-serif');
  text.style('text-transform', 'uppercase');
  text.style('letter-spacing', '0.5px');
  
- // Map label to panel
  const panelMap = {
    'Color': 'colorPanel',
    'Layout': 'layoutPanel',
@@ -708,29 +740,31 @@ function createIconButton(parent, label) {
  const panelId = panelMap[label];
  
  if (label === 'Share') {
-   // Direct action
-   btn.mousePressed(savePosterMobile);
+   btn.mousePressed(() => {
+     console.log('Share button pressed (mouse)');
+     savePosterMobile();
+   });
    btn.touchStarted((e) => {
+     console.log('Share button pressed (touch)');
      e.preventDefault();
      savePosterMobile();
      return false;
    });
-   btn.mouseOver(() => {
-     btn.style('background', 'rgba(255, 255, 255, 0.1)');
-   });
-   btn.mouseOut(() => {
-     btn.style('background', 'transparent');
-   });
  } else if (panelId) {
-   // Toggle panel
-   btn.mousePressed(() => toggleMobilePanel(panelId, btn));
+   btn.mousePressed(() => {
+     console.log('Button pressed:', label);
+     toggleMobilePanel(panelId, btn);
+   });
    btn.touchStarted((e) => {
+     console.log('Button touched:', label);
      e.preventDefault();
      toggleMobilePanel(panelId, btn);
      return false;
    });
    btn.attribute('data-panel', panelId);
  }
+ 
+ console.log('Button created:', label);
 }
 
 function toggleMobilePanel(panelId, button) {
@@ -747,7 +781,7 @@ function toggleMobilePanel(panelId, button) {
  
  // Deactivate all buttons
  selectAll('.mobile-icon-button').forEach(btn => {
-   btn.style('background', 'transparent');
+   btn.style('background', 'rgba(255,255,255,0.05)');
    const textEl = btn.elt.querySelector('div');
    if (textEl) {
      textEl.style.color = 'white';
@@ -757,8 +791,6 @@ function toggleMobilePanel(panelId, button) {
  if (activeMobilePanel === panelId) {
    // Close current panel
    panelsContainer.style('max-height', '0');
-   posterArea.style('flex', '1');
-   posterArea.style('max-height', 'none');
    activeMobilePanel = null;
    console.log('Panel closed');
  } else {
@@ -767,17 +799,11 @@ function toggleMobilePanel(panelId, button) {
    
    // Open selected panel
    panel.style('display', 'block');
-   panelsContainer.style('max-height', '250px');
-   posterArea.style('flex', '1');
-   posterArea.style('max-height', 'calc(100vh - 320px)');
+   panelsContainer.style('max-height', '300px');
    activeMobilePanel = panelId;
    
-   // Highlight active button with pink background
+   // Highlight active button
    button.style('background', '#db48ff');
-   const textEl = button.elt.querySelector('div');
-   if (textEl) {
-     textEl.style.color = 'white';
-   }
    
    console.log('Panel opened:', panelId);
  }
@@ -786,7 +812,7 @@ function toggleMobilePanel(panelId, button) {
  setTimeout(() => {
    calculateScaleRatio();
    updateCanvasSize();
- }, 320);
+ }, 350);
 }
 
 function createColorPanel(parent) {
@@ -830,7 +856,6 @@ function createColorPanel(parent) {
    
    const clickHandler = () => {
      bgColor = col;
-     // Update all color buttons
      selectAll('#colorPanel > div > div > div').forEach(btn => {
        btn.style('border', '3px solid transparent');
        btn.style('transform', 'scale(1)');
@@ -864,7 +889,6 @@ function createLayoutPanel(parent) {
  title.style('letter-spacing', '0.5px');
  title.style('color', '#400d60');
  
- // Size selector
  const sizeLabel = createDiv('Size:');
  sizeLabel.parent(panel);
  sizeLabel.style('margin-bottom', '8px');
@@ -892,12 +916,10 @@ function createLayoutPanel(parent) {
    updateWrappedText();
    populateMobileTextDropdown();
    
-   // Sync desktop dropdown if exists
    const desktopSize = select('#posterSizeSelector');
    if (desktopSize) desktopSize.value(posterSize);
  });
  
- // Layout selector
  const layoutLabel = createDiv('Style:');
  layoutLabel.parent(panel);
  layoutLabel.style('margin-bottom', '8px');
@@ -918,7 +940,6 @@ function createLayoutPanel(parent) {
    layout = int(layoutSelector.value());
    updateWrappedText();
    
-   // Sync desktop dropdown if exists
    const desktopLayout = select('#layoutSelector');
    if (desktopLayout) desktopLayout.value(layout);
  });
@@ -929,7 +950,7 @@ function createTextPanel(parent) {
  panel.parent(parent);
  panel.style('display', 'none');
  panel.style('padding', '20px');
- panel.style('max-height', '230px');
+ panel.style('max-height', '260px');
  panel.style('overflow-y', 'auto');
  
  const title = createDiv('Message');
@@ -949,14 +970,12 @@ function createTextPanel(parent) {
  textSelector.style('font-size', '14px');
  textSelector.style('font-family', '"RGFDare", sans-serif');
  
- // Populate options
  populateMobileTextDropdown();
  
  textSelector.changed(() => {
    mainText = textSelector.value();
    updateWrappedText();
    
-   // Sync desktop dropdown if exists
    const desktopText = select('#mainTextSelector');
    if (desktopText) desktopText.value(mainText);
  });
@@ -991,7 +1010,7 @@ function createIllustrationPanel(parent) {
  panel.parent(parent);
  panel.style('display', 'none');
  panel.style('padding', '20px');
- panel.style('max-height', '230px');
+ panel.style('max-height', '260px');
  panel.style('overflow-y', 'auto');
  
  const title = createDiv('Illustration');
@@ -1004,7 +1023,6 @@ function createIllustrationPanel(parent) {
  title.style('letter-spacing', '0.5px');
  title.style('color', '#400d60');
  
- // Category selector
  const catLabel = createDiv('Category:');
  catLabel.parent(panel);
  catLabel.style('margin-bottom', '8px');
@@ -1029,7 +1047,6 @@ function createIllustrationPanel(parent) {
    }
  });
  
- // Simple sliders with labels
  createSimpleSlider(panel, 'Scale', 0.5, 2, 1, 0.1, (val) => {
    illustrationScale = val;
  });
@@ -1063,58 +1080,51 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 }
 
 async function savePosterMobile() {
- // Prevent multiple taps while sharing
+ console.log('>>> savePosterMobile() CALLED <<<');
+ 
  if (isSharing) {
    console.log('Share already in progress');
    return;
  }
  
  isSharing = true;
+ console.log('Starting share process...');
  
  try {
-   // Save current state
    const originalScaleRatio = scaleRatio;
    const originalCanvasW = canvasW;
    const originalCanvasH = canvasH;
    
-   // Set to full resolution (no scaling)
    scaleRatio = 1;
    const fullWidth = posterSizes[posterSize].width;
    const fullHeight = posterSizes[posterSize].height;
    
-   // Temporarily resize canvas to full resolution
+   console.log('Resizing to full resolution:', fullWidth, 'x', fullHeight);
    resizeCanvas(fullWidth, fullHeight);
-   
-   // Redraw at full resolution (draw() will use scaleRatio = 1)
    redraw();
    
-   // Small delay to ensure rendering completes
    await new Promise(resolve => setTimeout(resolve, 150));
    
-   // Capture full resolution image with high quality
    const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.98);
+   console.log('Image captured, data URL length:', dataUrl.length);
    
-   // Restore original canvas size
    scaleRatio = originalScaleRatio;
    canvasW = originalCanvasW;
    canvasH = originalCanvasH;
    resizeCanvas(canvasW, canvasH);
    redraw();
    
-   // Convert data URL to blob
    const response = await fetch(dataUrl);
    const blob = await response.blob();
    
-   // Create file from blob
    const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
    const file = new File([blob], fileName, { type: 'image/jpeg' });
    
+   console.log('File created:', fileName);
    console.log('File size:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
-   console.log('Dimensions:', fullWidth, 'x', fullHeight);
    
-   // Check if Web Share API is supported and can share files
    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-     // Open native share sheet
+     console.log('Web Share API available, opening share sheet...');
      await navigator.share({
        files: [file],
        title: 'Dare We Poster',
@@ -1122,46 +1132,24 @@ async function savePosterMobile() {
      });
      
      console.log('Share completed successfully');
+   } else {
+     console.log('Web Share API not available');
    }
    
  } catch (error) {
-   // Silently handle all errors
-   console.log('Share action:', error.name || 'cancelled');
+   console.log('Share error or cancelled:', error.name, error.message);
    
-   // Make sure we restore canvas on error
-   const originalScaleRatio = 0.5;
-   scaleRatio = originalScaleRatio;
+   scaleRatio = 0.5;
    calculateScaleRatio();
    updateCanvasSize();
    redraw();
    
  } finally {
-   // Always reset the sharing flag after a delay
    setTimeout(() => {
      isSharing = false;
+     console.log('Share flag reset');
    }, 500);
  }
-}
-
-function showMobileConfirmation(message, bgColor) {
- const confirmation = createDiv(message);
- confirmation.style('position', 'fixed');
- confirmation.style('top', '50%');
- confirmation.style('left', '50%');
- confirmation.style('transform', 'translate(-50%, -50%)');
- confirmation.style('background', bgColor);
- confirmation.style('color', 'white');
- confirmation.style('padding', '20px 40px');
- confirmation.style('border-radius', '12px');
- confirmation.style('font-size', '18px');
- confirmation.style('font-weight', 'bold');
- confirmation.style('font-family', '"RGFDare", sans-serif');
- confirmation.style('z-index', '10000');
- confirmation.style('box-shadow', '0 4px 20px rgba(0,0,0,0.3)');
- confirmation.style('text-align', 'center');
- confirmation.parent('body');
- 
- setTimeout(() => confirmation.remove(), 2000);
 }
 
 // ---------- UI ----------
@@ -1256,12 +1244,10 @@ Object.keys(colors).forEach(col=>{
 });
 updateSelectedColorIndicator();
 
-// ---------- TEXT SECTION WITH DROPDOWN ----------
 const textSection = createSection();
 const lineLabel = createLabel(`Main Text:`, textSection);
 lineLabel.id('lineLimit');
 
-// Create dropdown instead of textarea
 mainTextArea = createSelect().id('mainTextSelector');
 mainTextArea.parent(textSection);
 mainTextArea.style('width','100%');
@@ -1269,10 +1255,8 @@ mainTextArea.style('padding','10px');
 mainTextArea.style('margin-bottom','15px');
 mainTextArea.style('font-size','16px');
 
-// Initial population
 populateMainTextDropdown();
 
-// Update handler for dropdown
 mainTextArea.changed(() => {
  const selectedText = mainTextArea.value();
  mainText = selectedText;
@@ -1291,7 +1275,6 @@ illuSelector.style('margin-bottom','15px');
 illuSelector.style('font-size','16px');
 illuSelector.changed(()=> {
  illustrationCategory = illuSelector.value();
- // Lazy load on mobile
  if (isMobile) {
    lazyLoadIllustration(illustrationCategory);
  }
@@ -1399,7 +1382,7 @@ illuYSlider.input(()=>{
  illuYHandle.style('left', (percent*100)+'%');
 });
 
-// Desktop Save and Clear buttons (not shown on mobile)
+// Desktop Save and Clear buttons
 if (!isMobile) {
  const exportSection = createSection();
  const saveBtn = createButton('Save Poster');
@@ -1433,7 +1416,6 @@ if (!isMobile) {
      
      savedPosters.push(posterData);
      
-     // Enforce limit
      while (savedPosters.length > MAX_SAVED_POSTERS) {
        savedPosters.shift();
      }
@@ -1509,20 +1491,12 @@ updateWrappedText();
 
 function calculateScaleRatio() {
  if (isMobile) {
-   // Mobile: use available screen space
-   let availableWidth = windowWidth - 20; // 10px padding each side
-   let availableHeight = windowHeight - 90; // 70px icon bar + 20px padding
+   let availableWidth = windowWidth - 20;
+   let availableHeight = windowHeight - 100;
    
    if (activeMobilePanel) {
-     availableHeight = windowHeight - 340; // 70px bar + 250px panel + 20px padding
+     availableHeight = windowHeight - 380;
    }
-   
-   console.log('Mobile scale calc:', {
-     availableWidth,
-     availableHeight,
-     windowHeight,
-     activeMobilePanel
-   });
    
    const posterWidth = posterSizes[posterSize].width;
    const posterHeight = posterSizes[posterSize].height;
@@ -1533,9 +1507,8 @@ function calculateScaleRatio() {
    scaleRatio = Math.min(widthRatio, heightRatio, 0.95);
    scaleRatio = Math.max(scaleRatio, 0.1);
    
-   console.log('Scale ratio:', scaleRatio);
+   console.log('Mobile scale:', scaleRatio);
  } else {
-   // Desktop logic (keep existing)
    let availableWidth = windowWidth - 450;
    if (windowWidth <= 1200) availableWidth = windowWidth - 100;
    const availableHeight = windowHeight - 150;
@@ -1636,24 +1609,23 @@ style.textContent = `
    font-weight: normal;
    font-style: normal;
  }
- @font-face {
-   font-family: 'Helvetica Neue LT Pro';
-   src: url('assets/Fonts/HelveticaNeueLTPro-Roman.ttf') format('truetype');
-   font-weight: normal;
-   font-style: normal;
- }
  
  * {
    box-sizing: border-box;
  }
  
- body { 
+ html, body { 
    margin:0; 
    padding:0; 
-   overflow-x:hidden; 
-   overflow-y:auto; 
+   width: 100%;
    background-color:#f5f5f5; 
  }
+ 
+ #app {
+   width: 100%;
+   min-height: 100vh;
+ }
+ 
  select { 
    padding: 12px 60px 12px 12px !important; 
    appearance: none;
@@ -1723,9 +1695,6 @@ style.textContent = `
  #uiPanel { 
    width:350px; 
    min-width:350px; 
-   position:sticky; 
-   top:20px; 
-   align-self:flex-start; 
  }
  #canvasContainer { 
    display:flex; 
@@ -1746,7 +1715,6 @@ style.textContent = `
    font-style:italic; 
  }
 
- /* Custom scrollbar for poster wall */
  #wallContainer::-webkit-scrollbar { 
    width: 10px; 
  }
@@ -1762,7 +1730,6 @@ style.textContent = `
    background: #db48ff; 
  }
 
- /* Mobile icon bar styles */
  .mobile-icon-button {
    user-select: none;
    -webkit-tap-highlight-color: transparent;
@@ -1803,29 +1770,6 @@ style.textContent = `
  }
  
  @media (max-width:768px){
-   html, body {
-     overflow: hidden;
-     width: 100%;
-     height: 100vh;
-     height: -webkit-fill-available;
-     margin: 0;
-     padding: 0;
-   }
-   
-   #app {
-     height: 100vh;
-     height: -webkit-fill-available;
-     overflow: hidden;
-     position: relative;
-   }
-   
-   #mainContainer {
-     height: 100vh;
-     height: -webkit-fill-available;
-     overflow: hidden;
-     position: relative;
-   }
-   
    #editorContainer {
      display: none !important;
    }
@@ -1837,45 +1781,28 @@ style.textContent = `
    #mobileLayout {
      display: flex !important;
      flex-direction: column !important;
-     height: 100vh !important;
-     height: -webkit-fill-available !important;
-     overflow: hidden !important;
-     position: relative !important;
-     width: 100%;
+     min-height: 100vh !important;
+     width: 100% !important;
    }
    
    #mobileIconBar {
-     position: relative;
-     z-index: 10;
      background: #400d60 !important;
-     border-top: 3px solid #db48ff !important;
-     flex-shrink: 0 !important;
-     min-height: 70px !important;
-     height: 70px !important;
-   }
-   
-   #mobilePanels {
-     flex-shrink: 0 !important;
-     -webkit-overflow-scrolling: touch;
+     border-top: 5px solid #db48ff !important;
+     min-height: 80px !important;
+     height: 80px !important;
+     display: flex !important;
    }
    
    #mobilePosterArea {
      flex: 1 !important;
-     min-height: 0 !important;
-     overflow: hidden !important;
+     min-height: 400px !important;
    }
    
-   #posterGrid{ 
-     grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); 
-   }
-   
-   /* Ensure canvas scales properly */
    canvas {
-     max-width: 100% !important;
-     max-height: 100% !important;
+     max-width: 95% !important;
+     max-height: 90% !important;
      width: auto !important;
      height: auto !important;
-     object-fit: contain !important;
    }
  }
 `;
@@ -1889,29 +1816,20 @@ const layoutSelector = select('#layoutSelector');
 if (layoutSelector) layoutSelector.value(layout);
 }
 
-// Fixed height calculator for Wix embed
 function _dwGetDesiredHeight(pad = 0) {
  if (isMobile) {
-   // Mobile needs full viewport height
-   return Math.max(window.innerHeight, 900) + pad;
+   return 1000 + pad; // Fixed height for mobile
  }
- 
- const editor = document.getElementById('editorContainer');
- if (!editor) {
-   return 1700 + pad;
- }
-
- const FIXED_HEIGHT = 1700;
- return FIXED_HEIGHT + pad;
+ return 1700 + pad;
 }
 
-// ---------- EMBED RESIZE COMMUNICATION ----------
 let __dw_resizeTO;
 
 function _dwPostHeight(pad = 0) {
 if (window.parent === window) return;
 const h = _dwGetDesiredHeight(pad);
 window.parent.postMessage({ type: 'DW_HEIGHT', height: h }, '*');
+console.log('Posting height to Wix:', h);
 }
 
 function _dwPostHeightDebounced(pad = 0) {
@@ -1919,12 +1837,11 @@ clearTimeout(__dw_resizeTO);
 __dw_resizeTO = setTimeout(() => _dwPostHeight(pad), 60);
 }
 
-// Send initial height on load
 window.addEventListener('load', () => {
+console.log('Window loaded, sending height to Wix');
 _dwPostHeight(30);
 });
 
-// Add error boundary
 window.addEventListener('error', (event) => {
 console.error('Global error:', event.error);
 event.preventDefault();
