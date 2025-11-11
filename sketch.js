@@ -1,5 +1,5 @@
 // -------------------------------------------------------------
-// DARE WE GENERATOR — Mobile-optimized with width detection
+// DARE WE GENERATOR — Mobile-optimized with bottom icon bar
 // -------------------------------------------------------------
 
 // Mobile detection - checks BOTH user agent AND width (for Wix compatibility)
@@ -245,7 +245,7 @@ try {
  main.style('align-items','center');
 
  if (isMobile) {
-   main.style('min-height', '100vh');
+   main.style('min-height', '0'); // CHANGED: No large min-height
  }
 
  const editor = createDiv().id('editorContainer');
@@ -611,21 +611,20 @@ function createMobileInterface() {
  const mobileLayout = createDiv().id('mobileLayout');
  mobileLayout.parent(main);
  mobileLayout.style('width', '100%');
- mobileLayout.style('min-height', '100vh');
  mobileLayout.style('display', 'flex');
  mobileLayout.style('flex-direction', 'column');
  mobileLayout.style('background', '#f5f5f5');
+ mobileLayout.style('min-height', '0');
  
  console.log('Mobile layout created');
  
  const posterArea = createDiv().id('mobilePosterArea');
  posterArea.parent(mobileLayout);
- posterArea.style('flex', '1');
  posterArea.style('display', 'flex');
  posterArea.style('justify-content', 'center');
  posterArea.style('align-items', 'center');
- posterArea.style('padding', '10px');
- posterArea.style('min-height', '500px');
+ posterArea.style('padding', '20px 10px');
+ posterArea.style('min-height', '0');
  posterArea.style('transition', 'all 0.3s ease');
  
  console.log('Poster area created');
@@ -665,6 +664,7 @@ function createMobileInterface() {
  iconBar.style('align-items', 'center');
  iconBar.style('padding', '10px');
  iconBar.style('flex-shrink', '0');
+ iconBar.style('margin-top', '0');
  
  console.log('Icon bar created');
  
@@ -1587,7 +1587,6 @@ style.textContent = `
  
  #app {
    width: 100%;
-   min-height: 100vh;
  }
  
  select { 
@@ -1742,7 +1741,7 @@ style.textContent = `
    #mobileLayout {
      display: flex !important;
      flex-direction: column !important;
-     min-height: 100vh !important;
+     min-height: 0 !important;
      width: 100% !important;
    }
    
@@ -1753,11 +1752,12 @@ style.textContent = `
      height: 80px !important;
      display: flex !important;
      width: 100% !important;
+     margin-top: 0 !important;
    }
    
    #mobilePosterArea {
-     flex: 1 !important;
-     min-height: 500px !important;
+     min-height: 0 !important;
+     padding: 20px 10px !important;
    }
    
    canvas {
