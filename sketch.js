@@ -226,6 +226,7 @@ try {
  frameRate(30);
  
  console.log('Setup starting, isMobile:', isMobile);
+ console.log('Window size:', windowWidth, 'x', windowHeight);
  
  const main = createDiv().id('mainContainer');
  main.parent('app');
@@ -588,19 +589,15 @@ function createMobileInterface() {
    editor.style('display', 'none');
  }
  
- // Create mobile layout
+ // Create mobile layout - IFRAME COMPATIBLE
  const mobileLayout = createDiv().id('mobileLayout');
  mobileLayout.parent(main);
  mobileLayout.style('width', '100%');
  mobileLayout.style('height', '100vh');
  mobileLayout.style('display', 'flex');
  mobileLayout.style('flex-direction', 'column');
- mobileLayout.style('position', 'fixed');
- mobileLayout.style('top', '0');
- mobileLayout.style('left', '0');
+ mobileLayout.style('position', 'relative'); // CHANGED from fixed for iframe
  mobileLayout.style('background', '#f5f5f5');
- mobileLayout.style('z-index', '1000');
- mobileLayout.style('overflow', 'hidden');
  
  // Poster container (fills available space above bottom bar)
  const posterArea = createDiv().id('mobilePosterArea');
@@ -1128,11 +1125,12 @@ async function savePosterMobile() {
    }
    
  } catch (error) {
-   // Silently handle errors
+   // Silently handle all errors
    console.log('Share action:', error.name || 'cancelled');
    
    // Make sure we restore canvas on error
-   scaleRatio = 0.5; // Reset to safe default
+   const originalScaleRatio = 0.5;
+   scaleRatio = originalScaleRatio;
    calculateScaleRatio();
    updateCanvasSize();
    redraw();
@@ -1806,23 +1804,26 @@ style.textContent = `
  
  @media (max-width:768px){
    html, body {
-     overflow: hidden !important;
-     position: fixed;
+     overflow: hidden;
      width: 100%;
      height: 100vh;
      height: -webkit-fill-available;
+     margin: 0;
+     padding: 0;
    }
    
    #app {
      height: 100vh;
      height: -webkit-fill-available;
      overflow: hidden;
+     position: relative;
    }
    
    #mainContainer {
      height: 100vh;
      height: -webkit-fill-available;
      overflow: hidden;
+     position: relative;
    }
    
    #editorContainer {
@@ -1839,16 +1840,13 @@ style.textContent = `
      height: 100vh !important;
      height: -webkit-fill-available !important;
      overflow: hidden !important;
-     position: fixed !important;
-     top: 0 !important;
-     left: 0 !important;
-     right: 0 !important;
-     bottom: 0 !important;
+     position: relative !important;
+     width: 100%;
    }
    
    #mobileIconBar {
      position: relative;
-     z-index: 100;
+     z-index: 10;
      background: #400d60 !important;
      border-top: 3px solid #db48ff !important;
      flex-shrink: 0 !important;
@@ -1893,14 +1891,18 @@ if (layoutSelector) layoutSelector.value(layout);
 
 // Fixed height calculator for Wix embed
 function _dwGetDesiredHeight(pad = 0) {
-const editor = document.getElementById('editorContainer');
+ if (isMobile) {
+   // Mobile needs full viewport height
+   return Math.max(window.innerHeight, 900) + pad;
+ }
+ 
+ const editor = document.getElementById('editorContainer');
+ if (!editor) {
+   return 1700 + pad;
+ }
 
-if (!editor) {
- return 1700 + pad;
-}
-
-const FIXED_HEIGHT = 1700;
-return FIXED_HEIGHT + pad;
+ const FIXED_HEIGHT = 1700;
+ return FIXED_HEIGHT + pad;
 }
 
 // ---------- EMBED RESIZE COMMUNICATION ----------
