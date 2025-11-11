@@ -1065,44 +1065,39 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 }
 
 async function savePosterMobile() {
- try {
-   // Get canvas as blob
-   const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.95);
-   
-   // Convert data URL to blob
-   const response = await fetch(dataUrl);
-   const blob = await response.blob();
-   
-   // Create file from blob
-   const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
-   const file = new File([blob], fileName, { type: 'image/jpeg' });
-   
-   // Check if Web Share API is supported and can share files
-   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-     // Open native share sheet ONLY - no download
-     await navigator.share({
-       files: [file],
-       title: 'Dare We Poster',
-       text: '#DAREWE'
-     });
-     
-     console.log('Share successful');
-     
-   } else {
-     // If Web Share API not supported, show message (NO DOWNLOAD)
-     showMobileInstructions('Sharing not supported on this browser. Please use Safari (iOS) or Chrome (Android).');
-   }
-   
- } catch (error) {
-   // User cancelled or error occurred - NO DOWNLOAD FALLBACK
-   if (error.name === 'AbortError') {
-     console.log('User cancelled share');
-     // Do nothing - user cancelled
-   } else {
-     console.error('Error sharing:', error);
-     showMobileInstructions('Unable to share. Please try using Safari (iOS) or Chrome (Android).');
-   }
- }
+try {
+  // Get canvas as blob
+  const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.95);
+  
+  // Convert data URL to blob
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  
+  // Create file from blob
+  const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
+  const file = new File([blob], fileName, { type: 'image/jpeg' });
+  
+  // Check if Web Share API is supported and can share files
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    // Open native share sheet ONLY - no download
+    await navigator.share({
+      files: [file],
+      title: 'Dare We Poster',
+      text: '#DAREWE'
+    });
+    
+    console.log('Share successful');
+  }
+  
+} catch (error) {
+  // User cancelled or error occurred - silently fail
+  if (error.name === 'AbortError') {
+    console.log('User cancelled share');
+  } else {
+    console.error('Error sharing:', error);
+  }
+  // No error message shown to user
+}
 }
 
 function showMobileConfirmation(message, bgColor) {
