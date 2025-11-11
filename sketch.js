@@ -224,6 +224,8 @@ try {
  pixelDensity(MAX_PIXEL_DENSITY);
  frameRate(30);
  
+ console.log('Setup starting, isMobile:', isMobile);
+ 
  const main = createDiv().id('mainContainer');
  main.parent('app');
  main.style('width','100%');
@@ -308,13 +310,16 @@ try {
 
  createUI(ui);
  
+ // Add styles BEFORE creating mobile interface
+ addStyles();
+ 
  // Create mobile interface
  if (isMobile) {
+   console.log('Creating mobile interface...');
    createMobileInterface();
  }
  
  updateWrappedText();
- addStyles();
  applyRGFFontToHeaders();
  updateSelectedColorIndicator();
  loadSavedPosters();
@@ -332,6 +337,8 @@ try {
 
  // Send fixed height to Wix
  _dwPostHeightDebounced(30);
+ 
+ console.log('Setup complete');
  
 } catch (error) {
  console.error('Setup error:', error);
@@ -568,6 +575,8 @@ if (posterSize === 'Landscape') {
 function createMobileInterface() {
  if (!isMobile) return;
  
+ console.log('Creating mobile interface...');
+ 
  const main = select('#mainContainer');
  if (!main) return;
  
@@ -589,8 +598,9 @@ function createMobileInterface() {
  mobileLayout.style('left', '0');
  mobileLayout.style('background', '#f5f5f5');
  mobileLayout.style('z-index', '1000');
+ mobileLayout.style('overflow', 'hidden'); // CRITICAL: Prevent scrolling
  
- // Poster container (fills available space)
+ // Poster container (fills available space above bottom bar)
  const posterArea = createDiv().id('mobilePosterArea');
  posterArea.parent(mobileLayout);
  posterArea.style('flex', '1');
@@ -600,20 +610,23 @@ function createMobileInterface() {
  posterArea.style('overflow', 'hidden');
  posterArea.style('padding', '10px');
  posterArea.style('transition', 'all 0.3s ease');
+ posterArea.style('min-height', '0'); // CRITICAL: Allow flex shrinking
  
  // Move canvas to mobile poster area
  if (canvas) {
    canvas.parent(posterArea);
  }
  
- // Expandable panels container
+ // Expandable panels container (slides up from bottom)
  const panelsContainer = createDiv().id('mobilePanels');
  panelsContainer.parent(mobileLayout);
  panelsContainer.style('background', 'white');
  panelsContainer.style('box-shadow', '0 -2px 10px rgba(0,0,0,0.1)');
  panelsContainer.style('transition', 'all 0.3s ease');
  panelsContainer.style('max-height', '0');
- panelsContainer.style('overflow', 'hidden');
+ panelsContainer.style('overflow-y', 'auto'); // Allow scrolling in panel
+ panelsContainer.style('overflow-x', 'hidden');
+ panelsContainer.style('flex-shrink', '0'); // Don't shrink
  
  // Create all panels (hidden by default)
  createColorPanel(panelsContainer);
@@ -621,16 +634,21 @@ function createMobileInterface() {
  createTextPanel(panelsContainer);
  createIllustrationPanel(panelsContainer);
  
- // Bottom icon bar (always visible)
+ // Bottom icon bar (ALWAYS VISIBLE - fixed height)
  const iconBar = createDiv().id('mobileIconBar');
  iconBar.parent(mobileLayout);
  iconBar.style('height', '70px');
+ iconBar.style('min-height', '70px'); // CRITICAL: Prevent shrinking
+ iconBar.style('flex-shrink', '0'); // CRITICAL: Don't shrink
  iconBar.style('background', 'white');
- iconBar.style('border-top', '2px solid #e0e0e0');
+ iconBar.style('border-top', '3px solid #2737A2');
  iconBar.style('display', 'flex');
  iconBar.style('justify-content', 'space-around');
  iconBar.style('align-items', 'center');
  iconBar.style('padding', '0 10px');
+ iconBar.style('box-shadow', '0 -2px 10px rgba(0,0,0,0.2)'); // More visible shadow
+ 
+ console.log('Icon bar created');
  
  // Create icon buttons
  createIconButton(iconBar, '🎨', 'colorPanel', 'Color');
@@ -639,10 +657,19 @@ function createMobileInterface() {
  createIconButton(iconBar, '🖼️', 'illustrationPanel', 'Image');
  createIconButton(iconBar, '💾', null, 'Save', savePosterMobile);
  
+ console.log('Icon buttons created');
+ 
  // Hide wall container on mobile
  if (wallContainer) {
    wallContainer.style('display', 'none');
  }
+ 
+ // Force a layout recalculation
+ setTimeout(() => {
+   calculateScaleRatio();
+   updateCanvasSize();
+   console.log('Mobile layout complete');
+ }, 100);
 }
 
 function createIconButton(parent, emoji, panelId, label, callback) {
@@ -672,11 +699,21 @@ function createIconButton(parent, emoji, panelId, label, callback) {
  if (callback) {
    // Direct action (like Save)
    btn.mousePressed(callback);
+   btn.touchStarted((e) => {
+     e.preventDefault();
+     callback();
+     return false;
+   });
    btn.mouseOver(() => btn.style('background', '#f0f0f0'));
    btn.mouseOut(() => btn.style('background', 'transparent'));
  } else if (panelId) {
    // Toggle panel
    btn.mousePressed(() => toggleMobilePanel(panelId, btn));
+   btn.touchStarted((e) => {
+     e.preventDefault();
+     toggleMobilePanel(panelId, btn);
+     return false;
+   });
    btn.attribute('data-panel', panelId);
  }
 }
@@ -686,7 +723,12 @@ function toggleMobilePanel(panelId, button) {
  const panel = select(`#${panelId}`);
  const posterArea = select('#mobilePosterArea');
  
- if (!panelsContainer || !panel) return;
+ if (!panelsContainer || !panel) {
+   console.error('Panel not found:', panelId);
+   return;
+ }
+ 
+ console.log('Toggling panel:', panelId);
  
  // Deactivate all buttons
  selectAll('.mobile-icon-button').forEach(btn => {
@@ -699,28 +741,33 @@ function toggleMobilePanel(panelId, button) {
    // Close current panel
    panelsContainer.style('max-height', '0');
    posterArea.style('flex', '1');
+   posterArea.style('max-height', 'none');
    activeMobilePanel = null;
+   console.log('Panel closed');
  } else {
    // Close all panels
    selectAll('.mobile-panel').forEach(p => p.style('display', 'none'));
    
    // Open selected panel
    panel.style('display', 'block');
-   panelsContainer.style('max-height', '300px');
-   posterArea.style('flex', '0.6');
+   panelsContainer.style('max-height', '250px'); // Reduced from 300px
+   posterArea.style('flex', '1');
+   posterArea.style('max-height', 'calc(100vh - 320px)'); // Explicit max height
    activeMobilePanel = panelId;
    
    // Highlight active button
    button.style('background', '#2737A2');
    const textEl = button.elt.querySelector('div:last-child');
    if (textEl) textEl.style.color = 'white';
+   
+   console.log('Panel opened:', panelId);
  }
  
  // Recalculate canvas size
  setTimeout(() => {
    calculateScaleRatio();
    updateCanvasSize();
- }, 300);
+ }, 320); // Wait for animation
 }
 
 function createColorPanel(parent) {
@@ -758,7 +805,7 @@ function createColorPanel(parent) {
      colorBtn.style('transform', 'scale(1.1)');
    }
    
-   colorBtn.mousePressed(() => {
+   const clickHandler = () => {
      bgColor = col;
      // Update all color buttons
      selectAll('#colorPanel > div > div > div').forEach(btn => {
@@ -767,6 +814,13 @@ function createColorPanel(parent) {
      });
      colorBtn.style('border', '3px solid #333');
      colorBtn.style('transform', 'scale(1.1)');
+   };
+   
+   colorBtn.mousePressed(clickHandler);
+   colorBtn.touchStarted((e) => {
+     e.preventDefault();
+     clickHandler();
+     return false;
    });
  });
 }
@@ -840,7 +894,7 @@ function createTextPanel(parent) {
  panel.parent(parent);
  panel.style('display', 'none');
  panel.style('padding', '20px');
- panel.style('max-height', '280px');
+ panel.style('max-height', '230px');
  panel.style('overflow-y', 'auto');
  
  const title = createDiv('Message');
@@ -897,7 +951,7 @@ function createIllustrationPanel(parent) {
  panel.parent(parent);
  panel.style('display', 'none');
  panel.style('padding', '20px');
- panel.style('max-height', '280px');
+ panel.style('max-height', '230px');
  panel.style('overflow-y', 'auto');
  
  const title = createDiv('Illustration');
@@ -1328,13 +1382,19 @@ updateWrappedText();
 function calculateScaleRatio() {
  if (isMobile) {
    // Mobile: use available screen space
-   const posterArea = select('#mobilePosterArea');
-   let availableWidth = windowWidth - 20;
-   let availableHeight = windowHeight - 90; // Icon bar height
+   let availableWidth = windowWidth - 20; // 10px padding each side
+   let availableHeight = windowHeight - 90; // 70px icon bar + 20px padding
    
    if (activeMobilePanel) {
-     availableHeight = availableHeight * 0.6; // Shrink when panel open
+     availableHeight = windowHeight - 340; // 70px bar + 250px panel + 20px padding
    }
+   
+   console.log('Mobile scale calc:', {
+     availableWidth,
+     availableHeight,
+     windowHeight,
+     activeMobilePanel
+   });
    
    const posterWidth = posterSizes[posterSize].width;
    const posterHeight = posterSizes[posterSize].height;
@@ -1342,8 +1402,10 @@ function calculateScaleRatio() {
    const widthRatio = availableWidth / posterWidth;
    const heightRatio = availableHeight / posterHeight;
    
-   scaleRatio = Math.min(widthRatio, heightRatio, 0.9);
+   scaleRatio = Math.min(widthRatio, heightRatio, 0.95);
    scaleRatio = Math.max(scaleRatio, 0.1);
+   
+   console.log('Scale ratio:', scaleRatio);
  } else {
    // Desktop logic (keep existing)
    let availableWidth = windowWidth - 450;
@@ -1452,6 +1514,11 @@ style.textContent = `
    font-weight: normal;
    font-style: normal;
  }
+ 
+ * {
+   box-sizing: border-box;
+ }
+ 
  body { 
    margin:0; 
    padding:0; 
@@ -1570,6 +1637,7 @@ style.textContent = `
  .mobile-icon-button {
    user-select: none;
    -webkit-tap-highlight-color: transparent;
+   -webkit-touch-callout: none;
  }
  
  .mobile-panel {
@@ -1602,6 +1670,26 @@ style.textContent = `
  }
  
  @media (max-width:768px){
+   html, body {
+     overflow: hidden !important;
+     position: fixed;
+     width: 100%;
+     height: 100vh;
+     height: -webkit-fill-available;
+   }
+   
+   #app {
+     height: 100vh;
+     height: -webkit-fill-available;
+     overflow: hidden;
+   }
+   
+   #mainContainer {
+     height: 100vh;
+     height: -webkit-fill-available;
+     overflow: hidden;
+   }
+   
    #editorContainer {
      display: none !important;
    }
@@ -1610,8 +1698,51 @@ style.textContent = `
      display: none !important;
    }
    
+   #mobileLayout {
+     display: flex !important;
+     flex-direction: column !important;
+     height: 100vh !important;
+     height: -webkit-fill-available !important;
+     overflow: hidden !important;
+     position: fixed !important;
+     top: 0 !important;
+     left: 0 !important;
+     right: 0 !important;
+     bottom: 0 !important;
+   }
+   
+   #mobileIconBar {
+     position: relative;
+     z-index: 100;
+     background: white !important;
+     border-top: 3px solid #2737A2 !important;
+     flex-shrink: 0 !important;
+     min-height: 70px !important;
+     height: 70px !important;
+   }
+   
+   #mobilePanels {
+     flex-shrink: 0 !important;
+     -webkit-overflow-scrolling: touch;
+   }
+   
+   #mobilePosterArea {
+     flex: 1 !important;
+     min-height: 0 !important;
+     overflow: hidden !important;
+   }
+   
    #posterGrid{ 
      grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); 
+   }
+   
+   /* Ensure canvas scales properly */
+   canvas {
+     max-width: 100% !important;
+     max-height: 100% !important;
+     width: auto !important;
+     height: auto !important;
+     object-fit: contain !important;
    }
  }
 `;
