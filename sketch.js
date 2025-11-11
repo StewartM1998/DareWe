@@ -1055,68 +1055,84 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 }
 
 async function savePosterMobile() {
- if (isSharing) {
-   console.log('Download already in progress');
-   return;
- }
- 
- isSharing = true;
- console.log('Starting download...');
- 
- try {
-   const originalScaleRatio = scaleRatio;
-   const originalCanvasW = canvasW;
-   const originalCanvasH = canvasH;
-   
-   scaleRatio = 1;
-   const fullWidth = posterSizes[posterSize].width;
-   const fullHeight = posterSizes[posterSize].height;
-   
-   console.log('Resizing to full resolution:', fullWidth, 'x', fullHeight);
-   resizeCanvas(fullWidth, fullHeight);
-   redraw();
-   
-   await new Promise(resolve => setTimeout(resolve, 150));
-   
-   const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.98);
-   
-   scaleRatio = originalScaleRatio;
-   canvasW = originalCanvasW;
-   canvasH = originalCanvasH;
-   resizeCanvas(canvasW, canvasH);
-   redraw();
-   
-   console.log('Image captured, downloading...');
-   
-   // Direct download to files
-   const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
-   const link = document.createElement('a');
-   link.href = dataUrl;
-   link.download = fileName;
-   
-   // For iOS - open in new tab so user can long-press to save
-   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-   if (isIOS) {
-     link.target = '_blank';
-   }
-   
-   document.body.appendChild(link);
-   link.click();
-   document.body.removeChild(link);
-   
-   console.log('Download triggered');
-   
- } catch (error) {
-   console.log('Download error:', error.message);
-   scaleRatio = 0.5;
-   calculateScaleRatio();
-   updateCanvasSize();
-   redraw();
- } finally {
-   setTimeout(() => {
-     isSharing = false;
-   }, 500);
- }
+if (isSharing) {
+  console.log('Download already in progress');
+  return;
+}
+
+isSharing = true;
+console.log('>>> SAVE BUTTON PRESSED <<<');
+
+try {
+  // Save current state
+  const originalScaleRatio = scaleRatio;
+  const originalCanvasW = canvasW;
+  const originalCanvasH = canvasH;
+  
+  // Set to full resolution
+  scaleRatio = 1;
+  const fullWidth = posterSizes[posterSize].width;
+  const fullHeight = posterSizes[posterSize].height;
+  
+  console.log('Resizing canvas to:', fullWidth, 'x', fullHeight);
+  resizeCanvas(fullWidth, fullHeight);
+  redraw();
+  
+  // Wait for render
+  await new Promise(resolve => setTimeout(resolve, 200));
+  
+  console.log('Getting image data...');
+  
+  // Get canvas data as blob (more reliable than data URL)
+  canvas.elt.toBlob(async (blob) => {
+    console.log('Blob created, size:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
+    
+    const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
+    
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    
+    // Trigger download
+    link.click();
+    
+    console.log('Download triggered!');
+    
+    // Cleanup
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      console.log('Cleanup complete');
+    }, 100);
+    
+    // Restore original size
+    scaleRatio = originalScaleRatio;
+    canvasW = originalCanvasW;
+    canvasH = originalCanvasH;
+    resizeCanvas(canvasW, canvasH);
+    redraw();
+    
+    isSharing = false;
+    
+  }, 'image/jpeg', 0.98);
+  
+} catch (error) {
+  console.error('Download error:', error);
+  console.error('Error stack:', error.stack);
+  
+  // Restore canvas
+  scaleRatio = 0.5;
+  calculateScaleRatio();
+  updateCanvasSize();
+  redraw();
+  
+  isSharing = false;
+}
 }
 
 // ---------- UI ----------
