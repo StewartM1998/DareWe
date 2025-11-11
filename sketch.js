@@ -1,6 +1,3 @@
-My thought process
-Complete Full Code - With On-Screen Debug Logging
-javascript
 // -------------------------------------------------------------
 // DARE WE GENERATOR — Mobile Debug Version
 // -------------------------------------------------------------
@@ -1854,10 +1851,3 @@ window.addEventListener('unhandledrejection', (event) => {
 debugLog('Promise rejection: ' + event.reason);
 event.preventDefault();
 });
-
-What You'll See on iPhone:
-Black debug panel at top with green text showing all activity
-Poster in middle
-Dark purple bottom bar with 5 white text buttons
-
-The debug panel will say "Scroll down to see bottom bar!" - so scroll down and tell me what the debug messages say! The bottom bar should be there. 📱🔍
