@@ -1048,65 +1048,100 @@ function createSimpleSlider(parent, label, min, max, defaultVal, step, callback)
 }
 
 async function savePosterMobile() {
- if (isSharing) {
-   console.log('Share already in progress');
-   return;
- }
- 
- isSharing = true;
- console.log('Starting share...');
- 
- try {
-   const originalScaleRatio = scaleRatio;
-   const originalCanvasW = canvasW;
-   const originalCanvasH = canvasH;
-   
-   scaleRatio = 1;
-   const fullWidth = posterSizes[posterSize].width;
-   const fullHeight = posterSizes[posterSize].height;
-   
-   console.log('Resizing to full resolution:', fullWidth, 'x', fullHeight);
-   resizeCanvas(fullWidth, fullHeight);
-   redraw();
-   
-   await new Promise(resolve => setTimeout(resolve, 150));
-   
-   const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.98);
-   
-   scaleRatio = originalScaleRatio;
-   canvasW = originalCanvasW;
-   canvasH = originalCanvasH;
-   resizeCanvas(canvasW, canvasH);
-   redraw();
-   
-   const response = await fetch(dataUrl);
-   const blob = await response.blob();
-   
-   const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
-   const file = new File([blob], fileName, { type: 'image/jpeg' });
-   
-   console.log('File size:', (blob.size / 1024 / 1024).toFixed(2), 'MB');
-   
-   if (navigator.canShare && navigator.canShare({ files: [file] })) {
-     await navigator.share({
-       files: [file],
-       title: 'Dare We Poster',
-       text: '#DAREWE'
-     });
-     console.log('Share complete');
-   }
-   
- } catch (error) {
-   console.log('Share cancelled or error:', error.name);
-   scaleRatio = 0.5;
-   calculateScaleRatio();
-   updateCanvasSize();
-   redraw();
- } finally {
-   setTimeout(() => {
-     isSharing = false;
-   }, 500);
- }
+if (isSharing) {
+  console.log('Share already in progress');
+  return;
+}
+
+isSharing = true;
+console.log('Starting save...');
+
+try {
+  const originalScaleRatio = scaleRatio;
+  const originalCanvasW = canvasW;
+  const originalCanvasH = canvasH;
+  
+  scaleRatio = 1;
+  const fullWidth = posterSizes[posterSize].width;
+  const fullHeight = posterSizes[posterSize].height;
+  
+  console.log('Resizing to full resolution:', fullWidth, 'x', fullHeight);
+  resizeCanvas(fullWidth, fullHeight);
+  redraw();
+  
+  await new Promise(resolve => setTimeout(resolve, 150));
+  
+  const dataUrl = canvas.elt.toDataURL('image/jpeg', 0.98);
+  
+  scaleRatio = originalScaleRatio;
+  canvasW = originalCanvasW;
+  canvasH = originalCanvasH;
+  resizeCanvas(canvasW, canvasH);
+  redraw();
+  
+  console.log('Image captured, starting download...');
+  
+  // Direct download - works in all iframes
+  const fileName = `dare-we-poster-${posterSize}-${Date.now()}.jpg`;
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = fileName;
+  
+  // For iOS - open in new tab if download doesn't work
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  if (isIOS) {
+    link.target = '_blank';
+  }
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  console.log('Download triggered');
+  
+  // Show confirmation
+  showDownloadConfirmation(isIOS);
+  
+} catch (error) {
+  console.log('Error:', error.message);
+  scaleRatio = 0.5;
+  calculateScaleRatio();
+  updateCanvasSize();
+  redraw();
+} finally {
+  setTimeout(() => {
+    isSharing = false;
+  }, 500);
+}
+}
+
+function showDownloadConfirmation(isIOS) {
+const confirmation = createDiv();
+confirmation.style('position', 'fixed');
+confirmation.style('top', '50%');
+confirmation.style('left', '50%');
+confirmation.style('transform', 'translate(-50%, -50%)');
+confirmation.style('background', '#400d60');
+confirmation.style('color', 'white');
+confirmation.style('padding', '20px');
+confirmation.style('border-radius', '12px');
+confirmation.style('font-size', '14px');
+confirmation.style('font-family', '"RGFDare", sans-serif');
+confirmation.style('z-index', '10000');
+confirmation.style('box-shadow', '0 4px 20px rgba(0,0,0,0.3)');
+confirmation.style('text-align', 'center');
+confirmation.style('max-width', '280px');
+confirmation.style('line-height', '1.4');
+
+if (isIOS) {
+  confirmation.html('✓ Image opened!<br><br>Press and hold the image, then tap "Save to Photos"');
+} else {
+  confirmation.html('✓ Downloaded!<br><br>Check your Downloads folder');
+}
+
+confirmation.parent('body');
+
+setTimeout(() => confirmation.remove(), 4000);
 }
 
 // ---------- UI ----------
